@@ -1,0 +1,14 @@
+.git
+.github
+tests
+bench
+docs
+*.md
+!README.md
+__pycache__
+*.pyc
+.pytest_cache
+.ruff_cache
+.mypy_cache
+*.json
+!ulrc3/confidence.json

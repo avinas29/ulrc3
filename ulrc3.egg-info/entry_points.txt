@@ -1,0 +1,2 @@
+[console_scripts]
+ulrc3 = ulrc3.cli:main

@@ -1,0 +1,98 @@
+{
+ "full system": {
+  "ratio": 0.7484670253200836,
+  "answerability": 0.9983974358974359,
+  "contradiction": 0.0,
+  "numbers": 0.9076227458438998,
+  "identifiers": 0.994066181353333,
+  "integrity": 1.0,
+  "syntax_ok": 0.8846153846153846,
+  "latency_ms": 44.17198717948718,
+  "wall_s": 9.98,
+  "n": 156
+ },
+ "no_ladder": {
+  "ratio": 0.6804932043718483,
+  "answerability": 1.0,
+  "contradiction": 0.0,
+  "numbers": 0.9071123321123321,
+  "identifiers": 1.0,
+  "integrity": 1.0,
+  "syntax_ok": 0.8846153846153846,
+  "latency_ms": 45.025,
+  "wall_s": 10.23,
+  "n": 156
+ },
+ "no_attention": {
+  "ratio": 0.738018379340261,
+  "answerability": 0.9983974358974359,
+  "contradiction": 0.0,
+  "numbers": 0.9081158424908425,
+  "identifiers": 0.994066181353333,
+  "integrity": 1.0,
+  "syntax_ok": 0.8846153846153846,
+  "latency_ms": 40.61884615384616,
+  "wall_s": 9.44,
+  "n": 156
+ },
+ "no_lexical": {
+  "ratio": 0.7494449797765516,
+  "answerability": 0.9983974358974359,
+  "contradiction": 0.0,
+  "numbers": 0.9049107142857142,
+  "identifiers": 0.994066181353333,
+  "integrity": 1.0,
+  "syntax_ok": 0.8846153846153846,
+  "latency_ms": 42.46019230769231,
+  "wall_s": 9.92,
+  "n": 156
+ },
+ "no_dedup": {
+  "ratio": 0.7345169433066943,
+  "answerability": 1.0,
+  "contradiction": 0.0,
+  "numbers": 0.9071648703860242,
+  "identifiers": 0.994066181353333,
+  "integrity": 1.0,
+  "syntax_ok": 0.8846153846153846,
+  "latency_ms": 33.97737179487179,
+  "wall_s": 8.4,
+  "n": 156
+ },
+ "no_closure": {
+  "ratio": 0.7517109781483691,
+  "answerability": 0.9983974358974359,
+  "contradiction": 0.0,
+  "numbers": 0.9076227458438998,
+  "identifiers": 0.994066181353333,
+  "integrity": 1.0,
+  "syntax_ok": 0.8846153846153846,
+  "latency_ms": 43.812948717948714,
+  "wall_s": 9.96,
+  "n": 156
+ },
+ "no_order": {
+  "ratio": 0.7486099707731447,
+  "answerability": 0.9983974358974359,
+  "contradiction": 0.0,
+  "numbers": 0.9076227458438998,
+  "identifiers": 0.994066181353333,
+  "integrity": 1.0,
+  "syntax_ok": 0.8846153846153846,
+  "latency_ms": 44.15698717948718,
+  "wall_s": 10.01,
+  "n": 156
+ },
+ "no_repair": {
+  "ratio": 0.7749346551369396,
+  "answerability": 0.8883547008547009,
+  "contradiction": 0.0,
+  "numbers": 0.6899162625124163,
+  "identifiers": 0.9826359986189707,
+  "integrity": 1.0,
+  "syntax_ok": 0.8846153846153846,
+  "latency_ms": 43.17666666666667,
+  "wall_s": 9.83,
+  "n": 156
+ }
+}

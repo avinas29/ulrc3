@@ -1,0 +1,13 @@
+{
+ "bias": -1.15,
+ "ratio": -1.55,
+ "integrity": 2.1,
+ "retention": 1.45,
+ "critical": 1.6,
+ "coverage_kept": 2.35,
+ "violation_rate": -2.1,
+ "reduced_fidelity": -0.85,
+ "type_entropy": -0.55,
+ "query_coverage": 1.35,
+ "provenance": -4.0
+}

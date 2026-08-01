@@ -1,0 +1,1234 @@
+{
+ "model": "gemini-flash-latest",
+ "mode": "balanced",
+ "summary": {
+  "full": {
+   "n": 36,
+   "accuracy": 0.8217592592592592,
+   "exact": 0.5555555555555556,
+   "mean_tokens": 2914.3055555555557
+  },
+  "ulrc3": {
+   "n": 36,
+   "accuracy": 0.7638888888888888,
+   "exact": 0.4166666666666667,
+   "mean_tokens": 379.3888888888889
+  },
+  "truncate": {
+   "n": 36,
+   "accuracy": 0.10648148148148148,
+   "exact": 0.05555555555555555,
+   "mean_tokens": 379.3888888888889
+  }
+ },
+ "trials": [
+  {
+   "iid": "needle-000",
+   "suite": "needle",
+   "condition": "full",
+   "tokens": 4615,
+   "score": 1.0,
+   "reply": "NDL-8650 and 65.75 percent",
+   "error": "",
+   "latency_ms": null
+  },
+  {
+   "iid": "multihop-000",
+   "suite": "multihop",
+   "condition": "full",
+   "tokens": 871,
+   "score": 0.5,
+   "reply": "Gothenburg",
+   "error": "",
+   "latency_ms": null
+  },
+  {
+   "iid": "numeric-000",
+   "suite": "numeric",
+   "condition": "full",
+   "tokens": 1777,
+   "score": 1.0,
+   "reply": "$1413.40",
+   "error": "",
+   "latency_ms": null
+  },
+  {
+   "iid": "memory-000",
+   "suite": "memory",
+   "condition": "full",
+   "tokens": 1390,
+   "score": 1.0,
+   "reply": "Business plan, $2307 per month, ap14@example.test",
+   "error": "",
+   "latency_ms": null
+  },
+  {
+   "iid": "logs-000",
+   "suite": "logs",
+   "condition": "full",
+   "tokens": 12397,
+   "score": 1.0,
+   "reply": "db.pool connection pool exhausted: 100/100 in use, order 57385 failed",
+   "error": "",
+   "latency_ms": null
+  },
+  {
+   "iid": "mixed-000",
+   "suite": "mixed",
+   "condition": "full",
+   "tokens": 286,
+   "score": 0.6666666666666666,
+   "reply": "52 requests per minute, tok_810017",
+   "error": "",
+   "latency_ms": null
+  },
+  {
+   "iid": "rag-000",
+   "suite": "rag",
+   "condition": "full",
+   "tokens": 1390,
+   "score": 1.0,
+   "reply": "$76.6M revenue, 24% year over year growth, 73% gross margin",
+   "error": "",
+   "latency_ms": null
+  },
+  {
+   "iid": "code-000",
+   "suite": "code",
+   "condition": "full",
+   "tokens": 1745,
+   "score": 0.75,
+   "reply": "`def lookup(self, account_id: str, limit: int = 386) -> list[str]`; default limit: 386",
+   "error": "",
+   "latency_ms": null
+  },
+  {
+   "iid": "apidocs-000",
+   "suite": "apidocs",
+   "condition": "full",
+   "tokens": 1909,
+   "score": 0.6666666666666666,
+   "reply": "Parameters: `cursor` (string, optional), `limit` (integer, max 100); Error code: 429",
+   "error": "",
+   "latency_ms": null
+  },
+  {
+   "iid": "needle-001",
+   "suite": "needle",
+   "condition": "full",
+   "tokens": 4492,
+   "score": 1.0,
+   "reply": "Verification code: NDL-8321, Approved threshold: 59.21 percent",
+   "error": "",
+   "latency_ms": null
+  },
+  {
+   "iid": "multihop-001",
+   "suite": "multihop",
+   "condition": "full",
+   "tokens": 882,
+   "score": 0.5,
+   "reply": "Gothenburg",
+   "error": "",
+   "latency_ms": null
+  },
+  {
+   "iid": "numeric-001",
+   "suite": "numeric",
+   "condition": "full",
+   "tokens": 1613,
+   "score": 1.0,
+   "reply": "$845",
+   "error": "",
+   "latency_ms": null
+  },
+  {
+   "iid": "memory-001",
+   "suite": "memory",
+   "condition": "full",
+   "tokens": 1399,
+   "score": 1.0,
+   "reply": "Business plan, $931 per month, ap15@example.test",
+   "error": "",
+   "latency_ms": null
+  },
+  {
+   "iid": "logs-001",
+   "suite": "logs",
+   "condition": "full",
+   "tokens": 12397,
+   "score": 1.0,
+   "reply": "db.pool connection pool exhausted: 100/100 in use; order 73635",
+   "error": "",
+   "latency_ms": null
+  },
+  {
+   "iid": "mixed-001",
+   "suite": "mixed",
+   "condition": "full",
+   "tokens": 286,
+   "score": 0.6666666666666666,
+   "reply": "133 requests per minute; tok_174226",
+   "error": "",
+   "latency_ms": null
+  },
+  {
+   "iid": "rag-001",
+   "suite": "rag",
+   "condition": "full",
+   "tokens": 1256,
+   "score": 1.0,
+   "reply": "$67.8M revenue, 13% growth year over year, 84% gross margin",
+   "error": "",
+   "latency_ms": null
+  },
+  {
+   "iid": "code-001",
+   "suite": "code",
+   "condition": "full",
+   "tokens": 1755,
+   "score": 0.5,
+   "reply": "collect(self, series_id: str, limit: int = 58) -> list[str]; default limit is 58",
+   "error": "",
+   "latency_ms": null
+  },
+  {
+   "iid": "apidocs-001",
+   "suite": "apidocs",
+   "condition": "full",
+   "tokens": 1954,
+   "score": 0.6666666666666666,
+   "reply": "expand (string, optional), limit (integer, max 100); error code 429",
+   "error": "",
+   "latency_ms": null
+  },
+  {
+   "iid": "needle-002",
+   "suite": "needle",
+   "condition": "full",
+   "tokens": 4640,
+   "score": 1.0,
+   "reply": "NDL-4843 and 91.43 percent",
+   "error": "",
+   "latency_ms": null
+  },
+  {
+   "iid": "multihop-002",
+   "suite": "multihop",
+   "condition": "full",
+   "tokens": 885,
+   "score": 0.5,
+   "reply": "Reykjavik",
+   "error": "",
+   "latency_ms": null
+  },
+  {
+   "iid": "numeric-002",
+   "suite": "numeric",
+   "condition": "full",
+   "tokens": 1581,
+   "score": 1.0,
+   "reply": "$532",
+   "error": "",
+   "latency_ms": null
+  },
+  {
+   "iid": "memory-002",
+   "suite": "memory",
+   "condition": "full",
+   "tokens": 1392,
+   "score": 1.0,
+   "reply": "Growth plan, $1741 per month, ap87@example.test",
+   "error": "",
+   "latency_ms": null
+  },
+  {
+   "iid": "logs-002",
+   "suite": "logs",
+   "condition": "full",
+   "tokens": 12397,
+   "score": 1.0,
+   "reply": "Connection pool exhausted (100/100 in use), order 93876",
+   "error": "",
+   "latency_ms": null
+  },
+  {
+   "iid": "mixed-002",
+   "suite": "mixed",
+   "condition": "full",
+   "tokens": 280,
+   "score": 0.6666666666666666,
+   "reply": "85 requests per minute, tok_912324",
+   "error": "",
+   "latency_ms": null
+  },
+  {
+   "iid": "rag-002",
+   "suite": "rag",
+   "condition": "full",
+   "tokens": 1312,
+   "score": 1.0,
+   "reply": "Revenue: $20.4M, Growth: 30% YoY, Gross margin: 63%",
+   "error": "",
+   "latency_ms": null
+  },
+  {
+   "iid": "code-002",
+   "suite": "code",
+   "condition": "full",
+   "tokens": 1744,
+   "score": 0.5,
+   "reply": "`lookup(self, series_id: str, limit: int = 207) -> list[str]`; default limit: 207",
+   "error": "",
+   "latency_ms": null
+  },
+  {
+   "iid": "apidocs-002",
+   "suite": "apidocs",
+   "condition": "full",
+   "tokens": 1922,
+   "score": 0.6666666666666666,
+   "reply": "Parameters: `cursor` (string, optional), `limit` (integer, max 100); Error code: 409",
+   "error": "",
+   "latency_ms": null
+  },
+  {
+   "iid": "needle-003",
+   "suite": "needle",
+   "condition": "full",
+   "tokens": 4749,
+   "score": 1.0,
+   "reply": "Verification code: NDL-2051, Threshold: 57.63 percent",
+   "error": "",
+   "latency_ms": null
+  },
+  {
+   "iid": "multihop-003",
+   "suite": "multihop",
+   "condition": "full",
+   "tokens": 875,
+   "score": 0.5,
+   "reply": "Valparaiso",
+   "error": "",
+   "latency_ms": null
+  },
+  {
+   "iid": "numeric-003",
+   "suite": "numeric",
+   "condition": "full",
+   "tokens": 1657,
+   "score": 1.0,
+   "reply": "$874.60",
+   "error": "",
+   "latency_ms": null
+  },
+  {
+   "iid": "memory-003",
+   "suite": "memory",
+   "condition": "full",
+   "tokens": 1419,
+   "score": 1.0,
+   "reply": "Starter plan, $1160 per month, ap44@example.test",
+   "error": "",
+   "latency_ms": null
+  },
+  {
+   "iid": "logs-003",
+   "suite": "logs",
+   "condition": "full",
+   "tokens": 12397,
+   "score": 1.0,
+   "reply": "db.pool connection pool exhausted: 100/100 in use; order 69841",
+   "error": "",
+   "latency_ms": null
+  },
+  {
+   "iid": "mixed-003",
+   "suite": "mixed",
+   "condition": "full",
+   "tokens": 275,
+   "score": 0.6666666666666666,
+   "reply": "155 requests per minute, default token tok_103006",
+   "error": "",
+   "latency_ms": null
+  },
+  {
+   "iid": "rag-003",
+   "suite": "rag",
+   "condition": "full",
+   "tokens": 1309,
+   "score": 1.0,
+   "reply": "Revenue: $20.1M, Growth: 29% year over year, Gross margin: 53%",
+   "error": "",
+   "latency_ms": null
+  },
+  {
+   "iid": "code-003",
+   "suite": "code",
+   "condition": "full",
+   "tokens": 1753,
+   "score": 0.5,
+   "reply": "collect(self, account_id: str, limit: int = 58) -> list[str]; default limit 58",
+   "error": "",
+   "latency_ms": null
+  },
+  {
+   "iid": "apidocs-003",
+   "suite": "apidocs",
+   "condition": "full",
+   "tokens": 1914,
+   "score": 0.6666666666666666,
+   "reply": "Parameters: expand (string, optional), limit (integer, max 100); Error code: 402",
+   "error": "",
+   "latency_ms": null
+  },
+  {
+   "iid": "needle-000",
+   "suite": "needle",
+   "condition": "ulrc3",
+   "tokens": 975,
+   "score": 1.0,
+   "reply": "NDL-8650 and 65.75 percent",
+   "error": "",
+   "latency_ms": null
+  },
+  {
+   "iid": "multihop-000",
+   "suite": "multihop",
+   "condition": "ulrc3",
+   "tokens": 358,
+   "score": 0.5,
+   "reply": "Gothenburg",
+   "error": "",
+   "latency_ms": null
+  },
+  {
+   "iid": "numeric-000",
+   "suite": "numeric",
+   "condition": "ulrc3",
+   "tokens": 119,
+   "score": 1.0,
+   "reply": "$1413.40",
+   "error": "",
+   "latency_ms": null
+  },
+  {
+   "iid": "memory-000",
+   "suite": "memory",
+   "condition": "ulrc3",
+   "tokens": 248,
+   "score": 1.0,
+   "reply": "Business plan, $2307 per month, ap14@example.test",
+   "error": "",
+   "latency_ms": null
+  },
+  {
+   "iid": "logs-000",
+   "suite": "logs",
+   "condition": "ulrc3",
+   "tokens": 164,
+   "score": 0.6666666666666666,
+   "reply": "Connection pool exhausted, order 57385",
+   "error": "",
+   "latency_ms": null
+  },
+  {
+   "iid": "mixed-000",
+   "suite": "mixed",
+   "condition": "ulrc3",
+   "tokens": 122,
+   "score": 0.6666666666666666,
+   "reply": "52 requests per minute, tok_810017",
+   "error": "",
+   "latency_ms": null
+  },
+  {
+   "iid": "rag-000",
+   "suite": "rag",
+   "condition": "ulrc3",
+   "tokens": 358,
+   "score": 1.0,
+   "reply": "Revenue: $76.6M, growth: 24% year over year, gross margin: 73%",
+   "error": "",
+   "latency_ms": null
+  },
+  {
+   "iid": "code-000",
+   "suite": "code",
+   "condition": "ulrc3",
+   "tokens": 678,
+   "score": 0.75,
+   "reply": "`def lookup(self, account_id: str, limit: int = 386) -> list[str]`, default limit: 386",
+   "error": "",
+   "latency_ms": null
+  },
+  {
+   "iid": "apidocs-000",
+   "suite": "apidocs",
+   "condition": "ulrc3",
+   "tokens": 276,
+   "score": 0.6666666666666666,
+   "reply": "Parameters: `cursor`, `limit`; error code: 429",
+   "error": "",
+   "latency_ms": null
+  },
+  {
+   "iid": "needle-001",
+   "suite": "needle",
+   "condition": "ulrc3",
+   "tokens": 937,
+   "score": 1.0,
+   "reply": "Verification code: NDL-8321, approved threshold: 59.21 percent",
+   "error": "",
+   "latency_ms": null
+  },
+  {
+   "iid": "multihop-001",
+   "suite": "multihop",
+   "condition": "ulrc3",
+   "tokens": 330,
+   "score": 0.5,
+   "reply": "Gothenburg",
+   "error": "",
+   "latency_ms": null
+  },
+  {
+   "iid": "numeric-001",
+   "suite": "numeric",
+   "condition": "ulrc3",
+   "tokens": 120,
+   "score": 1.0,
+   "reply": "$845",
+   "error": "",
+   "latency_ms": null
+  },
+  {
+   "iid": "memory-001",
+   "suite": "memory",
+   "condition": "ulrc3",
+   "tokens": 274,
+   "score": 1.0,
+   "reply": "Business plan, $931 per month, ap15@example.test",
+   "error": "",
+   "latency_ms": null
+  },
+  {
+   "iid": "logs-001",
+   "suite": "logs",
+   "condition": "ulrc3",
+   "tokens": 164,
+   "score": 0.6666666666666666,
+   "reply": "db.pool connection pool exhausted, order 73635",
+   "error": "",
+   "latency_ms": null
+  },
+  {
+   "iid": "mixed-001",
+   "suite": "mixed",
+   "condition": "ulrc3",
+   "tokens": 122,
+   "score": 0.6666666666666666,
+   "reply": "133 requests per minute, tok_174226",
+   "error": "",
+   "latency_ms": null
+  },
+  {
+   "iid": "rag-001",
+   "suite": "rag",
+   "condition": "ulrc3",
+   "tokens": 344,
+   "score": 1.0,
+   "reply": "$67.8M revenue, 13% YoY growth, 84% gross margin",
+   "error": "",
+   "latency_ms": null
+  },
+  {
+   "iid": "code-001",
+   "suite": "code",
+   "condition": "ulrc3",
+   "tokens": 719,
+   "score": 0.5,
+   "reply": "collect(self, series_id: str, limit: int = 58) -> list[str], default limit 58",
+   "error": "",
+   "latency_ms": null
+  },
+  {
+   "iid": "apidocs-001",
+   "suite": "apidocs",
+   "condition": "ulrc3",
+   "tokens": 325,
+   "score": 0.6666666666666666,
+   "reply": "expand and limit, error code 429",
+   "error": "",
+   "latency_ms": null
+  },
+  {
+   "iid": "needle-002",
+   "suite": "needle",
+   "condition": "ulrc3",
+   "tokens": 983,
+   "score": 1.0,
+   "reply": "NDL-4843, 91.43 percent",
+   "error": "",
+   "latency_ms": null
+  },
+  {
+   "iid": "multihop-002",
+   "suite": "multihop",
+   "condition": "ulrc3",
+   "tokens": 331,
+   "score": 0.5,
+   "reply": "Reykjavik",
+   "error": "",
+   "latency_ms": null
+  },
+  {
+   "iid": "numeric-002",
+   "suite": "numeric",
+   "condition": "ulrc3",
+   "tokens": 113,
+   "score": 0.0,
+   "reply": "NOT IN CONTEXT",
+   "error": "",
+   "latency_ms": null
+  },
+  {
+   "iid": "memory-002",
+   "suite": "memory",
+   "condition": "ulrc3",
+   "tokens": 281,
+   "score": 1.0,
+   "reply": "Growth plan, $1741 per month, ap87@example.test",
+   "error": "",
+   "latency_ms": null
+  },
+  {
+   "iid": "logs-002",
+   "suite": "logs",
+   "condition": "ulrc3",
+   "tokens": 164,
+   "score": 0.6666666666666666,
+   "reply": "db.pool connection pool exhausted, order 93876",
+   "error": "",
+   "latency_ms": null
+  },
+  {
+   "iid": "mixed-002",
+   "suite": "mixed",
+   "condition": "ulrc3",
+   "tokens": 109,
+   "score": 0.6666666666666666,
+   "reply": "85 requests per minute, tok_912324",
+   "error": "",
+   "latency_ms": null
+  },
+  {
+   "iid": "rag-002",
+   "suite": "rag",
+   "condition": "ulrc3",
+   "tokens": 364,
+   "score": 1.0,
+   "reply": "$20.4M revenue, 30% YoY growth, 63% gross margin",
+   "error": "",
+   "latency_ms": null
+  },
+  {
+   "iid": "code-002",
+   "suite": "code",
+   "condition": "ulrc3",
+   "tokens": 688,
+   "score": 0.75,
+   "reply": "`def lookup(self, series_id: str, limit: int = 207) -> list[str]:` (default limit: 207)",
+   "error": "",
+   "latency_ms": null
+  },
+  {
+   "iid": "apidocs-002",
+   "suite": "apidocs",
+   "condition": "ulrc3",
+   "tokens": 315,
+   "score": 0.6666666666666666,
+   "reply": "Parameters: `cursor`, `limit`; Error code: 409",
+   "error": "",
+   "latency_ms": null
+  },
+  {
+   "iid": "needle-003",
+   "suite": "needle",
+   "condition": "ulrc3",
+   "tokens": 984,
+   "score": 1.0,
+   "reply": "Verification code: NDL-2051, approved threshold: 57.63%",
+   "error": "",
+   "latency_ms": null
+  },
+  {
+   "iid": "multihop-003",
+   "suite": "multihop",
+   "condition": "ulrc3",
+   "tokens": 348,
+   "score": 0.5,
+   "reply": "Valparaiso",
+   "error": "",
+   "latency_ms": null
+  },
+  {
+   "iid": "numeric-003",
+   "suite": "numeric",
+   "condition": "ulrc3",
+   "tokens": 430,
+   "score": 1.0,
+   "reply": "$874.60",
+   "error": "",
+   "latency_ms": null
+  },
+  {
+   "iid": "memory-003",
+   "suite": "memory",
+   "condition": "ulrc3",
+   "tokens": 289,
+   "score": 1.0,
+   "reply": "Starter plan at $1160 per month, invoices to ap44@example.test",
+   "error": "",
+   "latency_ms": null
+  },
+  {
+   "iid": "logs-003",
+   "suite": "logs",
+   "condition": "ulrc3",
+   "tokens": 164,
+   "score": 0.6666666666666666,
+   "reply": "Connection pool exhausted (`db.pool connection pool exhausted`), order 69841",
+   "error": "",
+   "latency_ms": null
+  },
+  {
+   "iid": "mixed-003",
+   "suite": "mixed",
+   "condition": "ulrc3",
+   "tokens": 122,
+   "score": 0.6666666666666666,
+   "reply": "155 requests per minute, default token `\"tok_103006\"`",
+   "error": "",
+   "latency_ms": null
+  },
+  {
+   "iid": "rag-003",
+   "suite": "rag",
+   "condition": "ulrc3",
+   "tokens": 343,
+   "score": 1.0,
+   "reply": "$20.1M revenue, 29% growth, 53% gross margin",
+   "error": "",
+   "latency_ms": null
+  },
+  {
+   "iid": "code-003",
+   "suite": "code",
+   "condition": "ulrc3",
+   "tokens": 679,
+   "score": 0.5,
+   "reply": "`collect(self, account_id: str, limit: int = 58) -> list[str]`, default limit is 58",
+   "error": "",
+   "latency_ms": null
+  },
+  {
+   "iid": "apidocs-003",
+   "suite": "apidocs",
+   "condition": "ulrc3",
+   "tokens": 318,
+   "score": 0.6666666666666666,
+   "reply": "`expand` and `limit` (integer, max 100); error code 402",
+   "error": "",
+   "latency_ms": null
+  },
+  {
+   "iid": "needle-000",
+   "suite": "needle",
+   "condition": "truncate",
+   "tokens": 975,
+   "score": 1.0,
+   "reply": "NDL-8650 and 65.75 percent",
+   "error": "",
+   "latency_ms": null
+  },
+  {
+   "iid": "multihop-000",
+   "suite": "multihop",
+   "condition": "truncate",
+   "tokens": 358,
+   "score": 0.0,
+   "reply": "NOT IN CONTEXT",
+   "error": "",
+   "latency_ms": null
+  },
+  {
+   "iid": "numeric-000",
+   "suite": "numeric",
+   "condition": "truncate",
+   "tokens": 119,
+   "score": 0.0,
+   "reply": "NOT IN CONTEXT",
+   "error": "",
+   "latency_ms": null
+  },
+  {
+   "iid": "memory-000",
+   "suite": "memory",
+   "condition": "truncate",
+   "tokens": 248,
+   "score": 0.0,
+   "reply": "NOT IN CONTEXT",
+   "error": "",
+   "latency_ms": null
+  },
+  {
+   "iid": "logs-000",
+   "suite": "logs",
+   "condition": "truncate",
+   "tokens": 164,
+   "score": 0.0,
+   "reply": "NOT IN CONTEXT",
+   "error": "",
+   "latency_ms": null
+  },
+  {
+   "iid": "mixed-000",
+   "suite": "mixed",
+   "condition": "truncate",
+   "tokens": 122,
+   "score": 0.0,
+   "reply": "NOT IN CONTEXT",
+   "error": "",
+   "latency_ms": null
+  },
+  {
+   "iid": "rag-000",
+   "suite": "rag",
+   "condition": "truncate",
+   "tokens": 358,
+   "score": 0.0,
+   "reply": "NOT IN CONTEXT",
+   "error": "",
+   "latency_ms": null
+  },
+  {
+   "iid": "code-000",
+   "suite": "code",
+   "condition": "truncate",
+   "tokens": 678,
+   "score": 0.0,
+   "reply": "NOT IN CONTEXT",
+   "error": "",
+   "latency_ms": null
+  },
+  {
+   "iid": "apidocs-000",
+   "suite": "apidocs",
+   "condition": "truncate",
+   "tokens": 276,
+   "score": 0.0,
+   "reply": "NOT IN CONTEXT",
+   "error": "",
+   "latency_ms": null
+  },
+  {
+   "iid": "needle-001",
+   "suite": "needle",
+   "condition": "truncate",
+   "tokens": 937,
+   "score": 0.0,
+   "reply": "NOT IN CONTEXT",
+   "error": "",
+   "latency_ms": null
+  },
+  {
+   "iid": "multihop-001",
+   "suite": "multihop",
+   "condition": "truncate",
+   "tokens": 330,
+   "score": 0.5,
+   "reply": "Gothenburg",
+   "error": "",
+   "latency_ms": null
+  },
+  {
+   "iid": "numeric-001",
+   "suite": "numeric",
+   "condition": "truncate",
+   "tokens": 120,
+   "score": 0.0,
+   "reply": "NOT IN CONTEXT",
+   "error": "",
+   "latency_ms": null
+  },
+  {
+   "iid": "memory-001",
+   "suite": "memory",
+   "condition": "truncate",
+   "tokens": 274,
+   "score": 0.0,
+   "reply": "NOT IN CONTEXT",
+   "error": "",
+   "latency_ms": null
+  },
+  {
+   "iid": "logs-001",
+   "suite": "logs",
+   "condition": "truncate",
+   "tokens": 164,
+   "score": 0.0,
+   "reply": "NOT IN CONTEXT",
+   "error": "",
+   "latency_ms": null
+  },
+  {
+   "iid": "mixed-001",
+   "suite": "mixed",
+   "condition": "truncate",
+   "tokens": 122,
+   "score": 0.0,
+   "reply": "NOT IN CONTEXT",
+   "error": "",
+   "latency_ms": null
+  },
+  {
+   "iid": "rag-001",
+   "suite": "rag",
+   "condition": "truncate",
+   "tokens": 344,
+   "score": 1.0,
+   "reply": "Revenue: $67.8M, Growth: 13% YoY, Gross margin: 84%",
+   "error": "",
+   "latency_ms": null
+  },
+  {
+   "iid": "code-001",
+   "suite": "code",
+   "condition": "truncate",
+   "tokens": 719,
+   "score": 0.0,
+   "reply": "NOT IN CONTEXT",
+   "error": "",
+   "latency_ms": null
+  },
+  {
+   "iid": "apidocs-001",
+   "suite": "apidocs",
+   "condition": "truncate",
+   "tokens": 325,
+   "score": 0.0,
+   "reply": "NOT IN CONTEXT",
+   "error": "",
+   "latency_ms": null
+  },
+  {
+   "iid": "needle-002",
+   "suite": "needle",
+   "condition": "truncate",
+   "tokens": 983,
+   "score": 0.0,
+   "reply": "NOT IN CONTEXT",
+   "error": "",
+   "latency_ms": 7677.172499941662
+  },
+  {
+   "iid": "multihop-002",
+   "suite": "multihop",
+   "condition": "truncate",
+   "tokens": 331,
+   "score": 0.0,
+   "reply": "NOT IN CONTEXT",
+   "error": "",
+   "latency_ms": 7677.172499941662
+  },
+  {
+   "iid": "numeric-002",
+   "suite": "numeric",
+   "condition": "truncate",
+   "tokens": 113,
+   "score": 0.0,
+   "reply": "NOT IN CONTEXT",
+   "error": "",
+   "latency_ms": 7677.172499941662
+  },
+  {
+   "iid": "memory-002",
+   "suite": "memory",
+   "condition": "truncate",
+   "tokens": 281,
+   "score": 0.0,
+   "reply": "NOT IN CONTEXT",
+   "error": "",
+   "latency_ms": 7677.172499941662
+  },
+  {
+   "iid": "logs-002",
+   "suite": "logs",
+   "condition": "truncate",
+   "tokens": 164,
+   "score": 0.0,
+   "reply": "NOT IN CONTEXT",
+   "error": "",
+   "latency_ms": 7677.172499941662
+  },
+  {
+   "iid": "mixed-002",
+   "suite": "mixed",
+   "condition": "truncate",
+   "tokens": 109,
+   "score": 0.0,
+   "reply": "NOT IN CONTEXT",
+   "error": "",
+   "latency_ms": 7677.172499941662
+  },
+  {
+   "iid": "rag-002",
+   "suite": "rag",
+   "condition": "truncate",
+   "tokens": 364,
+   "score": 0.0,
+   "reply": "NOT IN CONTEXT",
+   "error": "",
+   "latency_ms": 9058.137709042057
+  },
+  {
+   "iid": "code-002",
+   "suite": "code",
+   "condition": "truncate",
+   "tokens": 688,
+   "score": 0.5,
+   "reply": "lookup(self, series_id: str, limit: int = 207) -> list[str]; default limit is 207",
+   "error": "",
+   "latency_ms": 9058.137709042057
+  },
+  {
+   "iid": "apidocs-002",
+   "suite": "apidocs",
+   "condition": "truncate",
+   "tokens": 315,
+   "score": 0.0,
+   "reply": "NOT IN CONTEXT",
+   "error": "",
+   "latency_ms": 9058.137709042057
+  },
+  {
+   "iid": "needle-003",
+   "suite": "needle",
+   "condition": "truncate",
+   "tokens": 984,
+   "score": 0.0,
+   "reply": "NOT IN CONTEXT",
+   "error": "",
+   "latency_ms": 9058.137709042057
+  },
+  {
+   "iid": "multihop-003",
+   "suite": "multihop",
+   "condition": "truncate",
+   "tokens": 348,
+   "score": 0.0,
+   "reply": "NOT IN CONTEXT",
+   "error": "",
+   "latency_ms": 9058.137709042057
+  },
+  {
+   "iid": "numeric-003",
+   "suite": "numeric",
+   "condition": "truncate",
+   "tokens": 430,
+   "score": 0.0,
+   "reply": "NOT IN CONTEXT",
+   "error": "",
+   "latency_ms": 9058.137709042057
+  },
+  {
+   "iid": "memory-003",
+   "suite": "memory",
+   "condition": "truncate",
+   "tokens": 289,
+   "score": 0.0,
+   "reply": "NOT IN CONTEXT",
+   "error": "",
+   "latency_ms": 7225.528124952689
+  },
+  {
+   "iid": "logs-003",
+   "suite": "logs",
+   "condition": "truncate",
+   "tokens": 164,
+   "score": 0.0,
+   "reply": "NOT IN CONTEXT",
+   "error": "",
+   "latency_ms": 7225.528124952689
+  },
+  {
+   "iid": "mixed-003",
+   "suite": "mixed",
+   "condition": "truncate",
+   "tokens": 122,
+   "score": 0.3333333333333333,
+   "reply": "155 requests per minute, token: \"tok_103\"",
+   "error": "",
+   "latency_ms": 7225.528124952689
+  },
+  {
+   "iid": "rag-003",
+   "suite": "rag",
+   "condition": "truncate",
+   "tokens": 343,
+   "score": 0.0,
+   "reply": "NOT IN CONTEXT",
+   "error": "",
+   "latency_ms": 7225.528124952689
+  },
+  {
+   "iid": "code-003",
+   "suite": "code",
+   "condition": "truncate",
+   "tokens": 679,
+   "score": 0.5,
+   "reply": "`collect(self, account_id: str, limit: int = 58) -> list[str]`, limit: 58",
+   "error": "",
+   "latency_ms": 7225.528124952689
+  },
+  {
+   "iid": "apidocs-003",
+   "suite": "apidocs",
+   "condition": "truncate",
+   "tokens": 318,
+   "score": 0.0,
+   "reply": "NOT IN CONTEXT",
+   "error": "",
+   "latency_ms": 7225.528124952689
+  }
+ ],
+ "paired": {
+  "n": 36,
+  "instances": [
+   "apidocs-000",
+   "apidocs-001",
+   "apidocs-002",
+   "apidocs-003",
+   "code-000",
+   "code-001",
+   "code-002",
+   "code-003",
+   "logs-000",
+   "logs-001",
+   "logs-002",
+   "logs-003",
+   "memory-000",
+   "memory-001",
+   "memory-002",
+   "memory-003",
+   "mixed-000",
+   "mixed-001",
+   "mixed-002",
+   "mixed-003",
+   "multihop-000",
+   "multihop-001",
+   "multihop-002",
+   "multihop-003",
+   "needle-000",
+   "needle-001",
+   "needle-002",
+   "needle-003",
+   "numeric-000",
+   "numeric-001",
+   "numeric-002",
+   "numeric-003",
+   "rag-000",
+   "rag-001",
+   "rag-002",
+   "rag-003"
+  ],
+  "means": {
+   "full": 0.8217592592592592,
+   "ulrc3": 0.7638888888888888,
+   "truncate": 0.10648148148148148
+  },
+  "comparisons": {
+   "ulrc3_vs_truncate": {
+    "delta": 0.6574074074074073,
+    "ci95": [
+     0.5439814814814814,
+     0.7615740740740741
+    ],
+    "wins": 31,
+    "losses": 0,
+    "ties": 5,
+    "p": 9.313225746154785e-10
+   },
+   "ulrc3_vs_full": {
+    "delta": -0.05787037037037035,
+    "ci95": [
+     -0.12962962962962965,
+     -0.002314814814814816
+    ],
+    "wins": 1,
+    "losses": 5,
+    "ties": 30,
+    "p": 1.0
+   }
+  },
+  "latency_ms": {
+   "truncate": 7986.946111312136
+  },
+  "latency_requests": {
+   "truncate": 3
+  },
+  "per_suite": {
+   "apidocs": {
+    "full": 0.6666666666666666,
+    "ulrc3": 0.6666666666666666,
+    "truncate": 0.0
+   },
+   "code": {
+    "full": 0.5625,
+    "ulrc3": 0.625,
+    "truncate": 0.25
+   },
+   "logs": {
+    "full": 1.0,
+    "ulrc3": 0.6666666666666666,
+    "truncate": 0.0
+   },
+   "memory": {
+    "full": 1.0,
+    "ulrc3": 1.0,
+    "truncate": 0.0
+   },
+   "mixed": {
+    "full": 0.6666666666666666,
+    "ulrc3": 0.6666666666666666,
+    "truncate": 0.08333333333333333
+   },
+   "multihop": {
+    "full": 0.5,
+    "ulrc3": 0.5,
+    "truncate": 0.125
+   },
+   "needle": {
+    "full": 1.0,
+    "ulrc3": 1.0,
+    "truncate": 0.25
+   },
+   "numeric": {
+    "full": 1.0,
+    "ulrc3": 0.75,
+    "truncate": 0.0
+   },
+   "rag": {
+    "full": 1.0,
+    "ulrc3": 1.0,
+    "truncate": 0.25
+   }
+  }
+ },
+ "pack": 6,
+ "failed_requests": 0,
+ "requests_spent_total": 23,
+ "budget": 48,
+ "stopped": ""
+}

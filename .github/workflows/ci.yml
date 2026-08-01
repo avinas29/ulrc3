@@ -1,0 +1,88 @@
+name: CI
+
+on:
+  push: { branches: [main] }
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.10", "3.11", "3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Install
+        run: python -m pip install -e ".[all,dev]"
+      - name: Lint
+        run: python -m ruff check ulrc3 bench tests
+      - name: Tests
+        run: python -m pytest tests/ -q
+
+  # The core engine must work with ZERO third-party packages installed.
+  # This job is the regression test for that claim.
+  stdlib-only:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - name: Install with no extras
+        run: python -m pip install . && python -m pip install pytest
+      - name: Verify the engine runs without numpy/tiktoken/fastapi
+        run: |
+          python -c "
+          import importlib, sys
+          for m in ('numpy', 'tiktoken', 'fastapi'):
+              assert importlib.util.find_spec(m) is None, m + ' should not be installed'
+          from ulrc3 import Compressor, Config, Mode
+          r = Compressor(Config(mode=Mode.BALANCED)).compress(open('README.md').read())
+          assert r.tokens_out < r.tokens_in
+          assert r.verification.integrity == 1.0
+          assert r.verification.provenance_ok
+          print('stdlib-only OK:', r.summary())
+          "
+
+  guarantees:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: python -m pip install -e ".[all,dev]"
+      - name: Guarantee suite
+        run: python -m pytest tests/test_guarantees.py -q
+      - name: Benchmark (quick) must not regress
+        run: |
+          python -m bench.run_bench --suite all --quick --out /tmp/bench.json
+          python - <<'PY'
+          import json
+          agg = json.load(open('/tmp/bench.json'))['aggregate']
+          for suite, systems in agg.items():
+              m = systems.get('ulrc3:balanced')
+              if not m:
+                  continue
+              assert m['integrity'] >= 0.999, (suite, 'integrity', m['integrity'])
+              assert m['hallucinated_words'] < 0.01, (suite, 'hallucination', m['hallucinated_words'])
+          print('benchmark gates passed')
+          PY
+
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build -t ulrc3:ci .
+      - name: Smoke the container
+        run: |
+          docker run -d --name ulrc3 -p 8000:8000 ulrc3:ci
+          for i in $(seq 1 30); do
+            curl -sf localhost:8000/v1/health && break || sleep 2
+          done
+          curl -sf localhost:8000/v1/compress -H 'content-type: application/json' \
+            -d '{"text":"The API must never return more than 100 rows. Filler. Filler. Filler.","mode":"balanced"}' \
+            | python -c "import json,sys; d=json.load(sys.stdin); assert d['verification']['integrity']==1.0; print('container OK')"
+          docker rm -f ulrc3

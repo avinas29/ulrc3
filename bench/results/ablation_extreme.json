@@ -1,0 +1,122 @@
+{
+ "full system": {
+  "ratio": 0.8116037838767052,
+  "answerability": 0.9732905982905984,
+  "contradiction": 0.0,
+  "numbers": 0.8761141636141636,
+  "identifiers": 0.9762647254133322,
+  "integrity": 1.0,
+  "syntax_ok": 0.9038461538461539,
+  "latency_ms": 41.17865384615384,
+  "wall_s": 9.25,
+  "n": 156
+ },
+ "no_ladder": {
+  "ratio": 0.7652315698927427,
+  "answerability": 0.9732905982905984,
+  "contradiction": 0.0,
+  "numbers": 0.8987789987789987,
+  "identifiers": 1.0,
+  "integrity": 1.0,
+  "syntax_ok": 0.9038461538461539,
+  "latency_ms": 41.41705128205128,
+  "wall_s": 9.37,
+  "n": 156
+ },
+ "no_attention": {
+  "ratio": 0.8105679130235991,
+  "answerability": 0.9732905982905984,
+  "contradiction": 0.0,
+  "numbers": 0.8761141636141636,
+  "identifiers": 0.9762647254133322,
+  "integrity": 1.0,
+  "syntax_ok": 0.9038461538461539,
+  "latency_ms": 37.896217948717954,
+  "wall_s": 8.73,
+  "n": 156
+ },
+ "no_lexical": {
+  "ratio": 0.8114262797395854,
+  "answerability": 0.9732905982905984,
+  "contradiction": 0.0,
+  "numbers": 0.8745115995115995,
+  "identifiers": 0.9762647254133322,
+  "integrity": 1.0,
+  "syntax_ok": 0.9038461538461539,
+  "latency_ms": 38.53294871794872,
+  "wall_s": 8.83,
+  "n": 156
+ },
+ "no_dedup": {
+  "ratio": 0.7975894368137166,
+  "answerability": 0.9700854700854702,
+  "contradiction": 0.0,
+  "numbers": 0.8311972749472749,
+  "identifiers": 0.9762647254133322,
+  "integrity": 1.0,
+  "syntax_ok": 1.0,
+  "latency_ms": 28.481089743589745,
+  "wall_s": 7.34,
+  "n": 156
+ },
+ "no_closure": {
+  "ratio": 0.8166351129518387,
+  "answerability": 0.9732905982905984,
+  "contradiction": 0.0,
+  "numbers": 0.8761141636141636,
+  "identifiers": 0.9762647254133322,
+  "integrity": 1.0,
+  "syntax_ok": 0.9038461538461539,
+  "latency_ms": 40.56698717948718,
+  "wall_s": 9.15,
+  "n": 156
+ },
+ "no_order": {
+  "ratio": 0.8117467293297664,
+  "answerability": 0.9732905982905984,
+  "contradiction": 0.0,
+  "numbers": 0.8761141636141636,
+  "identifiers": 0.9762647254133322,
+  "integrity": 1.0,
+  "syntax_ok": 0.9038461538461539,
+  "latency_ms": 40.891858974358975,
+  "wall_s": 9.21,
+  "n": 156
+ },
+ "no_repair": {
+  "ratio": 0.8280303898611064,
+  "answerability": 0.6041666666666666,
+  "contradiction": 0.0,
+  "numbers": 0.48794316438547203,
+  "identifiers": 0.9762647254133322,
+  "integrity": 1.0,
+  "syntax_ok": 0.9038461538461539,
+  "latency_ms": 39.68679487179487,
+  "wall_s": 8.99,
+  "n": 156
+ },
+ "no_coverage": {
+  "ratio": 0.8057704032701752,
+  "answerability": 0.9732905982905984,
+  "contradiction": 0.0,
+  "numbers": 0.8809218559218559,
+  "identifiers": 0.9762647254133322,
+  "integrity": 1.0,
+  "syntax_ok": 0.9038461538461539,
+  "latency_ms": 40.42346153846154,
+  "wall_s": 9.16,
+  "n": 156
+ },
+ "no_cov+no_attn": {
+  "ratio": 0.8067584442618091,
+  "answerability": 0.9732905982905984,
+  "contradiction": 0.0,
+  "numbers": 0.8809218559218559,
+  "identifiers": 0.9762647254133322,
+  "integrity": 1.0,
+  "syntax_ok": 0.9038461538461539,
+  "latency_ms": 37.497115384615384,
+  "wall_s": 8.71,
+  "n": 156
+ }
+}

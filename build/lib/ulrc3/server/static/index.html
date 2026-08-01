@@ -1,0 +1,266 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ULRC³ — Context Compression Engine</title>
+<style>
+  :root{
+    --bg:#0b0f17; --panel:#121826; --panel2:#0e1420; --line:#1f2937;
+    --ink:#e6edf7; --dim:#8b98ad; --accent:#4ade80; --accent2:#38bdf8;
+    --warn:#fbbf24; --bad:#f87171; --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  }
+  @media (prefers-color-scheme: light){
+    :root{ --bg:#f6f8fc; --panel:#fff; --panel2:#f0f3f9; --line:#dde3ee;
+           --ink:#0f172a; --dim:#5b6779; --accent:#059669; --accent2:#0284c7; }
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+       font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+  .wrap{max-width:1180px;margin:0 auto;padding:28px 20px 60px}
+  header{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin-bottom:6px}
+  h1{font-size:26px;margin:0;letter-spacing:-.02em}
+  h1 span{color:var(--accent)}
+  .tag{font:12px var(--mono);color:var(--dim);border:1px solid var(--line);
+       padding:3px 8px;border-radius:99px}
+  .sub{color:var(--dim);margin:0 0 22px;max-width:78ch}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  @media (max-width:900px){.grid{grid-template-columns:1fr}}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px}
+  label{display:block;font-size:12px;text-transform:uppercase;letter-spacing:.07em;
+        color:var(--dim);margin-bottom:7px}
+  textarea,input,select{width:100%;background:var(--panel2);color:var(--ink);
+    border:1px solid var(--line);border-radius:8px;padding:10px 12px;font-size:14px;
+    font-family:inherit}
+  textarea{min-height:230px;font-family:var(--mono);font-size:12.5px;resize:vertical}
+  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;margin-top:12px}
+  .row>div{flex:1;min-width:130px}
+  button{background:var(--accent);color:#04120b;border:0;border-radius:8px;
+    padding:11px 20px;font-weight:650;font-size:14px;cursor:pointer}
+  button:disabled{opacity:.55;cursor:progress}
+  button.ghost{background:transparent;color:var(--dim);border:1px solid var(--line);
+    padding:6px 11px;font-weight:500;font-size:12.5px}
+  button.ghost:hover{color:var(--ink);border-color:var(--accent2)}
+  .samples{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:10px}
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:16px 0}
+  @media (max-width:700px){.stats{grid-template-columns:repeat(2,1fr)}}
+  .stat{background:var(--panel2);border:1px solid var(--line);border-radius:10px;
+        padding:12px 13px}
+  .stat b{display:block;font-size:23px;font-family:var(--mono);letter-spacing:-.02em}
+  .stat small{color:var(--dim);font-size:11px;text-transform:uppercase;letter-spacing:.06em}
+  .good{color:var(--accent)} .info{color:var(--accent2)} .warn{color:var(--warn)}
+  .badges{display:flex;gap:7px;flex-wrap:wrap;margin:4px 0 14px}
+  .badge{font:12px var(--mono);padding:4px 10px;border-radius:99px;
+    border:1px solid var(--line);background:var(--panel2)}
+  .badge.ok{color:var(--accent);border-color:color-mix(in srgb,var(--accent) 40%,transparent)}
+  .badge.no{color:var(--bad);border-color:color-mix(in srgb,var(--bad) 40%,transparent)}
+  pre{background:var(--panel2);border:1px solid var(--line);border-radius:8px;
+      padding:13px;overflow:auto;max-height:430px;font-size:12.5px;
+      font-family:var(--mono);white-space:pre-wrap;word-break:break-word;margin:0}
+  table{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:6px}
+  th,td{text-align:left;padding:5px 8px;border-bottom:1px solid var(--line)}
+  th{color:var(--dim);font-weight:600;font-size:11px;text-transform:uppercase}
+  td.n{font-family:var(--mono);text-align:right}
+  details{margin-top:14px} summary{cursor:pointer;color:var(--dim);font-size:13px}
+  .err{color:var(--bad);font-size:13px;margin-top:10px}
+  footer{margin-top:34px;color:var(--dim);font-size:12.5px;border-top:1px solid var(--line);
+    padding-top:14px}
+  a{color:var(--accent2)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>ULRC<span>³</span></h1>
+    <span class="tag">semantic compiler for LLM context</span>
+  </header>
+  <p class="sub">
+    Not a summariser. It parses your prompt into a typed intermediate representation,
+    optimises it under a token budget with hard preservation constraints, then
+    <b>verifies</b> what survived — and shows you the audit.
+  </p>
+
+  <div class="grid">
+    <div class="card">
+      <label>Try a sample</label>
+      <div class="samples" id="samples"></div>
+      <label for="ctx">Context</label>
+      <textarea id="ctx" spellcheck="false" placeholder="Paste documents, code, logs, a chat transcript, JSON…"></textarea>
+      <div class="row">
+        <div>
+          <label for="q">Query (optional — enables query-aware compression)</label>
+          <input id="q" placeholder="What are the rate limits?">
+        </div>
+      </div>
+      <div class="row">
+        <div>
+          <label for="mode">Mode</label>
+          <select id="mode">
+            <option value="conservative">conservative (~50%)</option>
+            <option value="balanced" selected>balanced (~75%)</option>
+            <option value="aggressive">aggressive (~88%)</option>
+            <option value="extreme">extreme (~94%)</option>
+          </select>
+        </div>
+        <div style="flex:0 0 auto"><button id="go">Compress</button></div>
+      </div>
+      <div class="err" id="err"></div>
+    </div>
+
+    <div class="card">
+      <label>Result</label>
+      <div class="stats">
+        <div class="stat"><small>Tokens in</small><b id="s_in">—</b></div>
+        <div class="stat"><small>Tokens out</small><b class="info" id="s_out">—</b></div>
+        <div class="stat"><small>Reduction</small><b class="good" id="s_ratio">—</b></div>
+        <div class="stat"><small>Cost saved / 1k calls</small><b class="good" id="s_cost">—</b></div>
+      </div>
+      <div class="badges" id="badges"></div>
+      <pre id="out">Compressed output appears here.</pre>
+      <details>
+        <summary>Pipeline telemetry — what each pass did</summary>
+        <table id="passes"><thead><tr>
+          <th>pass</th><th style="text-align:right">ms</th>
+          <th style="text-align:right">tokens</th><th>note</th>
+        </tr></thead><tbody></tbody></table>
+      </details>
+    </div>
+  </div>
+
+  <footer>
+    Every guarantee shown is checked per request, not assumed:
+    <b>integrity</b> = nothing retained was partially destroyed ·
+    <b>no invented words</b> = output vocabulary ⊆ input vocabulary ·
+    <b>frozen</b> = system prompt / query byte-identical ·
+    <b>syntax</b> = emitted code re-parses.
+    &nbsp;·&nbsp; <a href="/docs">API docs</a> · <a href="/v1/health">health</a>
+  </footer>
+</div>
+
+<script>
+const SAMPLES = {
+  "API docs": {q:"What are the rate limits and what happened to v1?", t:
+`# Billing Service Guide
+
+## Overview
+The billing service handles invoicing for all Acme Corporation Limited customers.
+It is important to note that the service is basically a thin wrapper around the
+ledger, and it actually just forwards requests.
+
+## Limits
+The API must never return more than 100 invoices per page. Requests are rate
+limited to 60 per minute; exceeding that returns HTTP 429. The retry budget is
+3 attempts with exponential backoff starting at 250ms.
+
+For example, a client fetching 450 invoices will issue 5 paginated requests.
+For instance, another client fetching 90 invoices issues a single request.
+
+## Deprecations
+As previously mentioned, the v1 endpoints were removed on 2024-03-15. The
+migration guide is at https://docs.acme.io/billing/migrate-v2. Basically, do
+not use the legacy \`/v1/invoice\` path any more.`},
+
+  "Logs": {q:"What fatal error occurred and which order failed?", t:
+Array.from({length:60},(_,i)=>
+ `2024-03-15T10:${String(Math.floor(i/60)).padStart(2,"0")}:${String(i%60).padStart(2,"0")}Z INFO api.gateway request GET /v2/invoices status=200 dur=${10+i%25}ms`)
+ .concat([
+ "2024-03-15T10:01:02Z WARN  billing.worker retry 1/3 for order 88213 after 250ms",
+ "2024-03-15T10:01:05Z ERROR billing.worker payment failed for order 88213: gateway timeout",
+ "2024-03-15T10:01:08Z FATAL db.pool connection pool exhausted: 100/100 in use"]).join("\n")},
+
+  "Python code": {q:"What is the signature of charge()?", t:
+`"""Payment helpers. Copyright (c) 2024 Acme. All rights reserved."""
+import logging
+import math
+from dataclasses import dataclass
+
+logger = logging.getLogger(__name__)
+MAX_RETRIES = 3
+
+
+@dataclass
+class Receipt:
+    """A payment receipt."""
+    receipt_id: str
+    amount_cents: int
+
+
+class PaymentGateway:
+    """Talks to the upstream processor."""
+
+    def __init__(self, api_key: str, base_url: str = "https://api.acme.io/v2") -> None:
+        self.api_key = api_key
+        self.base_url = base_url
+
+    def charge(self, customer_id: str, amount_cents: int, currency: str = "USD") -> Receipt:
+        """Charge a customer. Raises ValueError when amount is not positive."""
+        if amount_cents <= 0:
+            raise ValueError("amount_cents must be positive")
+        return Receipt(receipt_id=customer_id, amount_cents=amount_cents)
+
+
+def unused_stats(values: list[int]) -> float:
+    """Geometric mean of the values."""
+    return math.exp(sum(math.log(v) for v in values) / len(values))`},
+
+  "Chat memory": {q:"Which plan and price did they finally choose?", t:
+["user: Hi there!","assistant: Certainly! How can I help you today?",
+ "user: We want the Enterprise plan.","assistant: The Enterprise plan costs $9,900 per month."]
+ .concat(Array.from({length:10},(_,i)=>
+  [`user: Some scheduling detail number ${i}.`,"assistant: Certainly! Noted, thanks."]).flat())
+ .concat(["user: Actually, correction: we want the Business plan, not Enterprise.",
+ "assistant: Understood, the Business plan is $1,200 per month.",
+ "user: Confirmed, go with Business. Invoice ap@acme.example.",
+ "assistant: Booked."]).join("\n")}
+};
+
+const $=id=>document.getElementById(id);
+const sam=$("samples");
+Object.keys(SAMPLES).forEach(k=>{
+  const b=document.createElement("button");
+  b.className="ghost"; b.textContent=k;
+  b.onclick=()=>{$("ctx").value=SAMPLES[k].t; $("q").value=SAMPLES[k].q||"";};
+  sam.appendChild(b);
+});
+$("ctx").value=SAMPLES["API docs"].t; $("q").value=SAMPLES["API docs"].q;
+
+function badge(label, ok){
+  return `<span class="badge ${ok?"ok":"no"}">${ok?"✓":"✗"} ${label}</span>`;
+}
+
+$("go").onclick=async()=>{
+  const btn=$("go"); btn.disabled=true; btn.textContent="Compressing…"; $("err").textContent="";
+  try{
+    const r=await fetch("/v1/compress",{method:"POST",
+      headers:{"content-type":"application/json"},
+      body:JSON.stringify({text:$("ctx").value,query:$("q").value,mode:$("mode").value})});
+    if(!r.ok) throw new Error(`HTTP ${r.status}: ${(await r.text()).slice(0,180)}`);
+    const d=await r.json(), v=d.verification;
+    $("s_in").textContent=d.tokens_in.toLocaleString();
+    $("s_out").textContent=d.tokens_out.toLocaleString();
+    $("s_ratio").textContent=(d.ratio*100).toFixed(1)+"%";
+    // GPT-4o-class input pricing, $2.50 per million tokens, over 1000 calls
+    $("s_cost").textContent="$"+(((d.tokens_in-d.tokens_out)*1000/1e6)*2.5).toFixed(2);
+    $("badges").innerHTML=
+      badge(`integrity ${(v.integrity*100).toFixed(0)}%`, v.integrity>=1)
+     +badge(`critical ${(v.critical_recall*100).toFixed(0)}%`, v.critical_recall>=1)
+     +badge("no invented words", v.provenance_ok)
+     +badge("frozen verbatim", v.frozen_ok)
+     +badge("syntax ok", v.syntax_ok)
+     +`<span class="badge">retention ${(v.retention*100).toFixed(0)}%</span>`
+     +`<span class="badge">confidence ${(d.confidence*100).toFixed(0)}%</span>`
+     +`<span class="badge">${d.meta.latency_ms} ms</span>`;
+    $("out").textContent=d.text;
+    const tb=$("passes").querySelector("tbody"); tb.innerHTML="";
+    d.passes.forEach(p=>{
+      const tr=document.createElement("tr");
+      tr.innerHTML=`<td>${p.name}</td><td class="n">${p.ms.toFixed(2)}</td>`+
+        `<td class="n">${p.tokens_in}→${p.tokens_out}</td><td>${p.note||""}</td>`;
+      tb.appendChild(tr);
+    });
+  }catch(e){ $("err").textContent=String(e); }
+  finally{ btn.disabled=false; btn.textContent="Compress"; }
+};
+</script>
+</body>
+</html>

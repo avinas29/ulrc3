@@ -1,0 +1,126 @@
+{
+ "scaling": [
+  {
+   "target_tokens": 1000,
+   "tokens_in": 1393,
+   "tokens_out": 366,
+   "ratio": 0.7373,
+   "p50_ms": 33.99,
+   "min_ms": 33.39,
+   "tokens_per_s": 40979,
+   "rss_delta_mb": 0.8,
+   "units": 108
+  },
+  {
+   "target_tokens": 4000,
+   "tokens_in": 4280,
+   "tokens_out": 932,
+   "ratio": 0.7822,
+   "p50_ms": 104.83,
+   "min_ms": 103.25,
+   "tokens_per_s": 40828,
+   "rss_delta_mb": 0.4,
+   "units": 336
+  },
+  {
+   "target_tokens": 16000,
+   "tokens_in": 16180,
+   "tokens_out": 1049,
+   "ratio": 0.9352,
+   "p50_ms": 377.58,
+   "min_ms": 376.63,
+   "tokens_per_s": 42852,
+   "rss_delta_mb": 13.5,
+   "units": 1274
+  },
+  {
+   "target_tokens": 64000,
+   "tokens_in": 64304,
+   "tokens_out": 1049,
+   "ratio": 0.9837,
+   "p50_ms": 1469.11,
+   "min_ms": 1461.99,
+   "tokens_per_s": 43771,
+   "rss_delta_mb": 55.8,
+   "units": 5056
+  },
+  {
+   "target_tokens": 128000,
+   "tokens_in": 128057,
+   "tokens_out": 1049,
+   "ratio": 0.9918,
+   "p50_ms": 2962.4,
+   "min_ms": 2954.24,
+   "tokens_per_s": 43227,
+   "rss_delta_mb": 26.6,
+   "units": 10066
+  }
+ ],
+ "passes": [
+  {
+   "pass": "levels",
+   "ms": 65.03,
+   "share": 0.1455
+  },
+  {
+   "pass": "dedup",
+   "ms": 286.76,
+   "share": 0.6417
+  },
+  {
+   "pass": "phantom-attention",
+   "ms": 66.58,
+   "share": 0.149
+  },
+  {
+   "pass": "salience",
+   "ms": 12.06,
+   "share": 0.027
+  },
+  {
+   "pass": "cascade-select",
+   "ms": 4.57,
+   "share": 0.0102
+  },
+  {
+   "pass": "closure",
+   "ms": 0.82,
+   "share": 0.0018
+  },
+  {
+   "pass": "order",
+   "ms": 0.11,
+   "share": 0.0003
+  },
+  {
+   "pass": "render",
+   "ms": 1.05,
+   "share": 0.0023
+  },
+  {
+   "pass": "verify",
+   "ms": 9.44,
+   "share": 0.0211
+  },
+  {
+   "pass": "confidence",
+   "ms": 0.46,
+   "share": 0.001
+  }
+ ],
+ "parallel": {
+  "docs": 16,
+  "size": 8000,
+  "sequential_s": 3.151,
+  "parallel_s": 1.088,
+  "speedup": 2.9
+ },
+ "cache": {
+  "cold_ms": 784.7,
+  "warm_ms": 0.74,
+  "hit_rate": 1.0,
+  "speedup": 1066.9
+ },
+ "cpu_count": 8,
+ "python": "3.13.5"
+}

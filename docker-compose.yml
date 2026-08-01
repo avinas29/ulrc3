@@ -1,0 +1,24 @@
+services:
+  ulrc3:
+    build:
+      context: .
+      args:
+        EXTRAS: server,tokenizers,fast
+    image: ulrc3:1.0.0
+    ports: ["8000:8000"]
+    environment:
+      ULRC3_MODE: balanced
+      ULRC3_MAX_CONCURRENCY: "32"
+    deploy:
+      resources:
+        limits: { cpus: "4.0", memory: 1G }
+        reservations: { cpus: "0.5", memory: 256M }
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request;urllib.request.urlopen('http://127.0.0.1:8000/v1/health',timeout=2)"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+    restart: unless-stopped
+    read_only: true
+    security_opt: ["no-new-privileges:true"]
+    cap_drop: ["ALL"]

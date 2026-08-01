@@ -1,0 +1,28 @@
+# Render blueprint — https://render.com/docs/blueprint-spec
+#
+#   1. push this repo to GitHub
+#   2. Render dashboard -> New -> Blueprint -> pick the repo
+#   3. it reads this file; no other configuration needed
+#
+# The free plan spins the service down after ~15 min idle, so the first request
+# after a pause takes ~50 s. Before demoing to judges, open the URL once to wake
+# it (see docs/DEPLOY.md).
+services:
+  - type: web
+    name: ulrc3
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: free
+    region: oregon
+    healthCheckPath: /v1/health
+    autoDeploy: true
+    envVars:
+      - key: ULRC3_MODE
+        value: balanced
+      - key: ULRC3_MAX_CONCURRENCY
+        value: "16"
+      # Free instances have 512 MB; one worker is the right call. The engine is
+      # stateless per request and releases the GIL inside tiktoken, so a single
+      # worker still serves concurrent requests through the threadpool.
+      - key: WEB_CONCURRENCY
+        value: "1"
