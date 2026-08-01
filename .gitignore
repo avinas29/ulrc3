@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.venv/
+venv/
+
+# Tooling caches
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# Secrets — never commit a key. The engine reads GEMINI_API_KEY from the
+# environment only; nothing in this repo should ever contain one.
+.env
+.env.*
+*.key
+
+# Benchmark *results* are evidence and ARE committed (bench/results/*.json).
+# Benchmark *inputs* are not redistributable, so they are not.
+bench/data/*
+!bench/data/.gitignore
+
+# OS
+.DS_Store
