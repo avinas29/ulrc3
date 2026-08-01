@@ -4,10 +4,15 @@ Every other number in this repository is an **upper bound**: answerability says
 the gold span is still present in the compressed context, not that a model found
 it. This page reports the first attempt to close that gap with a live model.
 
-**Headline (n=36 paired, after the fix below):** on **87% fewer tokens** the
-model answered **80.1%** correctly from ULRC³ context versus **82.2%** from the
-uncompressed original — **97.5% retention**. Truncation at the same token count
-managed **10.6%** (+69.5 points to ULRC³, p<0.0001).
+**Headline (n=36 paired, after the two fixes below):** on **87% fewer tokens**
+the model answered **82.9%** correctly from ULRC³ context versus **82.2%** from
+the uncompressed original — **no measurable loss**. Truncation at the same token
+count managed **10.6%** (p<0.0001).
+
+Read that as "no loss detected at n=36", not "better than the original": the
++0.7 point difference is far inside noise. What it does establish is that
+compression to 13% of the tokens did not cost measurable accuracy on nine
+content types.
 
 **This number moved twice, and both moves are the point of the exercise.** At
 n=18 retention read 95.5%; at n=36 it fell to **93.0% — a fail** against a 95%
@@ -115,13 +120,26 @@ This is the clearest argument in the project for extrinsic evaluation: a
 100%-answerability metric was hiding a 33-point real accuracy loss, because
 "the characters are present" and "the model can use them" are different claims.
 
-### The remaining loss: `numeric`
+### The second bug: arithmetic chains lost an operand
 
-`numeric` scores 75% vs 100% at `balanced`. Re-run at `conservative` it scores
-**100%** (measured, 4/4 instances), which takes overall retention to ~100%.
-This is not a defect but an operating-point choice: arithmetic chains need every
-link, and `balanced` compresses past that on this content. Routing numeric
-reasoning to `conservative` is the honest fix; auto-detecting it is future work.
+`numeric` scored **75% against 100%** for full context — while the intrinsic
+metric read **98.8% number recall**. The same shape as the logs bug: the numbers
+were *nearly* all there, and "nearly" is worth nothing to a computation.
+
+Retrieval tolerates losing one fact among many: the answer is a span, and a
+near-miss still answers. A computation does not — drop one of four operands and
+the result is **wrong**, not partial. The optimiser had no way to know the
+difference, because from its side an operand looks like any other number-bearing
+sentence.
+
+The fix (`_anchor_reasoning_chain`) detects a *computational query* — one asking
+for a derived value ("total", "how much", "after discount") rather than a stated
+one — and anchors every number-bearing prose unit for the whole request.
+
+Re-measured against the model: **75% → 100%**, 4/4 instances, at `balanced`.
+Cost across the whole benchmark: **0.1 points of compression** (73.7% → 73.6%),
+with number recall up 89.3% → 90.0%. All four operands now survive at *every*
+mode including `extreme`.
 
 ### Reading this honestly
 

@@ -16,6 +16,8 @@ Front-end orchestration.  Three things happen here that are easy to get wrong:
 
 from __future__ import annotations
 
+import re
+
 from ..config import Config
 from ..detect.doctype import Region, detect, entropy, segment
 from ..ir.obligations import ObligationExtractor
@@ -166,9 +168,53 @@ def _finalise(cir: CIR, cfg: Config, tok: CachedTokenizer) -> None:
                 cir.add_edge(uids[i], uids[i + 1], EdgeKind.REFERS, 0.6)
 
     seed(cir, cfg.protection)
+    _anchor_reasoning_chain(cir)
     propagate(cir, cfg.protection)
 
     cir.meta["stats"] = stats
+
+
+#: Queries that ask for a *derived* value rather than a stated one.  The answer
+#: is not in the context; it must be computed from operands that are.
+COMPUTATIONAL_QUERY = re.compile(
+    r"\b(total|sum|subtotal|average|mean|median|how\s+(?:much|many)|calculate|"
+    r"compute|difference|net|gross|combined|altogether|per\s+unit|overall\s+cost|"
+    r"final\s+(?:price|amount|cost)|after\s+(?:discount|tax|fees?))\b",
+    re.IGNORECASE,
+)
+
+
+def _anchor_reasoning_chain(cir: CIR) -> None:
+    """Protect every operand when the question requires arithmetic.
+
+    Normal retrieval tolerates losing one fact among many -- the answer is a
+    span, and a near-miss still answers.  A computation does not: drop one of
+    four operands and the result is *wrong*, not partial.  So when the query
+    asks for a derived value, every number-bearing prose unit is anchored.
+
+    This is the one place a live model scored our output below the uncompressed
+    control (75% vs 100% on the numeric suite) while the intrinsic metric read
+    98.8% number recall -- the operands were nearly all there, and "nearly" is
+    worth nothing to an arithmetic chain.
+    """
+    if not cir.query or not COMPUTATIONAL_QUERY.search(cir.query):
+        return
+    anchored = 0
+    for u in cir.units:
+        if u.kind not in _OPERAND_KINDS or u.protection >= Protection.ANCHORED:
+            continue
+        if any(k.startswith("n:") for k in u.obligations):
+            u.protection = Protection.ANCHORED
+            u.features["operand"] = 1.0
+            anchored += 1
+    cir.meta["operands_anchored"] = anchored
+
+
+#: Only prose carries an operand in this sense; a log line or table row is
+#: covered by its aggregate and would explode the floor if anchored.
+_OPERAND_KINDS = frozenset(
+    {UnitKind.SENTENCE, UnitKind.CLAUSE, UnitKind.PARAGRAPH, UnitKind.LIST_ITEM}
+)
 
 
 def make_stats(cir: CIR) -> TermStats:

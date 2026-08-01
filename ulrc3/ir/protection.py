@@ -31,7 +31,13 @@ from collections import deque
 from collections.abc import Iterable
 
 from ..config import ProtectionPolicy
-from ..text.lexicon import ASSISTANT_BOILERPLATE, BOILERPLATE_LINE, SMALL_TALK
+from ..text.lexicon import (
+    ASSISTANT_BOILERPLATE,
+    BOILERPLATE_LINE,
+    EXAMPLE_LEAD,
+    HEDGE,
+    SMALL_TALK,
+)
 from ..types import CIR, EdgeKind, ObligationClass, Protection, Unit, UnitKind, demote
 
 #: Segment roles whose units are frozen verbatim.
@@ -67,6 +73,22 @@ CODE_KINDS = frozenset(
         UnitKind.CODE_DOCSTRING,
     }
 )
+
+
+#: Kinds eligible for the filler rule (never code, never structural content).
+PROSE_KINDS = frozenset(
+    {UnitKind.SENTENCE, UnitKind.PARAGRAPH, UnitKind.LIST_ITEM, UnitKind.CLAUSE}
+)
+
+
+def hedge_ratio(text: str) -> float:
+    """Fraction of a unit covered by hedging / meta-commentary phrases."""
+    if not text.strip():
+        return 0.0
+    covered = sum(m.end() - m.start() for m in HEDGE.finditer(text))
+    covered += sum(m.end() - m.start() for m in EXAMPLE_LEAD.finditer(text))
+    covered += sum(m.end() - m.start() for m in ASSISTANT_BOILERPLATE.finditer(text))
+    return min(1.0, covered / max(1, len(text.strip())) * 3.0)
 
 
 def seed(cir: CIR, policy: ProtectionPolicy) -> None:
