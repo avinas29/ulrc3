@@ -63,6 +63,10 @@
   td.n{font-family:var(--mono);text-align:right}
   details{margin-top:14px} summary{cursor:pointer;color:var(--dim);font-size:13px}
   .err{color:var(--bad);font-size:13px;margin-top:10px}
+  .floor{font-size:12.5px;color:var(--warn);background:color-mix(in srgb,var(--warn) 8%,transparent);
+    border:1px solid color-mix(in srgb,var(--warn) 30%,transparent);border-radius:8px;
+    padding:9px 11px;margin:0 0 12px;line-height:1.5}
+  .floor:empty{display:none}
   footer{margin-top:34px;color:var(--dim);font-size:12.5px;border-top:1px solid var(--line);
     padding-top:14px}
   a{color:var(--accent2)}
@@ -116,6 +120,7 @@
         <div class="stat"><small>Cost saved / 1k calls</small><b class="good" id="s_cost">—</b></div>
       </div>
       <div class="badges" id="badges"></div>
+      <div class="floor" id="floor"></div>
       <pre id="out">Compressed output appears here.</pre>
       <details>
         <summary>Pipeline telemetry — what each pass did</summary>
@@ -138,14 +143,46 @@
 </div>
 
 <script>
+const _F=[
+ "The working group reviewed capacity forecasting during the session.",
+ "It is important to note that the team basically follows the standard process here.",
+ "As previously mentioned, this section is provided for background context only.",
+ "Generally speaking, the details are not particularly relevant to the outcome.",
+ "In other words, the approach is essentially the same as the one described earlier.",
+ "Needless to say, the group agreed to revisit the topic at a later date.",
+ "That is to say, the practical impact of the change is expected to be quite small.",
+ "For instance, some teams prefer to handle this asynchronously instead."];
+const _sec=(n,i)=>`## ${n}\n`+Array.from({length:6},(_,j)=>_F[(i+j)%_F.length]).join(" ");
+const _NAMES=["Attendance","Prior actions","Capacity review","Vendor update",
+              "Risk register","Cost review","Roadmap","Any other business"];
+
 const SAMPLES = {
+  "Long report": {q:"What budget was approved and what is the migration deadline?", t:
+    "# Quarterly Platform Review — Q4 2024\n\n"
+    + _NAMES.slice(0,4).map((n,i)=>_sec(n,i)).join("\n\n")
+    + "\n\n## Decisions\nThe committee approved a budget of $1.24M for FY2025. "
+    + "Migration to the v2 ledger must complete before 2025-03-31. "
+    + "The team will not renew the Northwind contract.\n\n"
+    + _NAMES.slice(4).map((n,i)=>_sec(n,i+4)).join("\n\n")},
+
   "API docs": {q:"What are the rate limits and what happened to v1?", t:
 `# Billing Service Guide
 
 ## Overview
 The billing service handles invoicing for all Acme Corporation Limited customers.
 It is important to note that the service is basically a thin wrapper around the
-ledger, and it actually just forwards requests.
+ledger, and it actually just forwards requests. Generally speaking, the internals
+are not particularly relevant to integrators. As previously mentioned, this
+section is provided for background context only. In other words, the approach is
+essentially the same as the one described in the platform overview. Needless to
+say, the working group agreed to revisit this documentation at a later date.
+
+## Architecture
+The service is deployed across three regions and fronted by a load balancer.
+That is to say, the practical impact of the topology on client code is expected
+to be quite small. For instance, some teams prefer to pin a region explicitly,
+though this is rarely necessary. It is worth noting that the routing layer is
+essentially transparent to callers. Basically, clients should not need to care.
 
 ## Limits
 The API must never return more than 100 invoices per page. Requests are rate
@@ -222,7 +259,7 @@ Object.keys(SAMPLES).forEach(k=>{
   b.onclick=()=>{$("ctx").value=SAMPLES[k].t; $("q").value=SAMPLES[k].q||"";};
   sam.appendChild(b);
 });
-$("ctx").value=SAMPLES["API docs"].t; $("q").value=SAMPLES["API docs"].q;
+$("ctx").value=SAMPLES["Long report"].t; $("q").value=SAMPLES["Long report"].q;
 
 function badge(label, ok){
   return `<span class="badge ${ok?"ok":"no"}">${ok?"✓":"✗"} ${label}</span>`;
@@ -250,6 +287,17 @@ $("go").onclick=async()=>{
      +`<span class="badge">retention ${(v.retention*100).toFixed(0)}%</span>`
      +`<span class="badge">confidence ${(d.confidence*100).toFixed(0)}%</span>`
      +`<span class="badge">${d.meta.latency_ms} ms</span>`;
+    // When the requested budget is below the protection floor, the engine
+    // refuses to go lower. Say so — otherwise a stricter mode looks like a
+    // broken control instead of the guarantee doing its job.
+    const floor=d.meta.floor_tokens||0, budget=d.meta.budget||0;
+    $("floor").innerHTML = (floor && budget < floor)
+      ? `<b>Protection floor reached.</b> You asked for ~${budget} tokens, but
+         ${floor} are constraints, numbers and their required headings that
+         cannot be dropped at any ratio — so stricter modes return the same
+         output. This is the guarantee refusing to break, not a stuck control.
+         Try a larger document (Logs) to see the modes separate.`
+      : "";
     $("out").textContent=d.text;
     const tb=$("passes").querySelector("tbody"); tb.innerHTML="";
     d.passes.forEach(p=>{

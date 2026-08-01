@@ -258,13 +258,13 @@ class CascadeSelectPass(Pass):
         # 3. lazy-greedy upgrade inside each group
         spent_total = 0
         for k, b in zip(keys, alloc):
-            spent_total += self._greedy(groups[k], cov, stats, b, ctx.cfg.marginal_floor)
+            spent_total += self._greedy(groups[k], cov, stats, b, ctx.cfg.effective_marginal_floor)
 
         # 4. spillover: whatever is left goes to a global round
         leftover = remaining - spent_total
         if leftover > 8:
             allu = [u for us in groups.values() for u in us if u.level < u.max_level()]
-            spent_total += self._greedy(allu, cov, stats, leftover, ctx.cfg.marginal_floor)
+            spent_total += self._greedy(allu, cov, stats, leftover, ctx.cfg.effective_marginal_floor)
 
         self._spent = base_cost + spent_total
         ctx.note("selected_tokens", self._spent)

@@ -22,6 +22,22 @@ class Mode(str, enum.Enum):
     EXTREME = "extreme"  #: skeleton only; facts + constraints + symbols
 
 
+#: How readily each mode stops *under* budget.
+#:
+#: A single constant here was a bug with a plausible-looking cause: at 0.04 for
+#: every mode, `conservative` refused to spend its much larger budget and
+#: produced byte-identical output to `balanced` on redundant content (measured:
+#: 467 tokens for budgets of 6203 *and* 744).  The mode names promise different
+#: things -- `conservative` means "keep more", `extreme` means "stop early" --
+#: so the stop has to move with them.
+MODE_MARGINAL_FLOOR: dict[Mode, float] = {
+    Mode.LOSSLESS: 0.0,       # spend it all; only structural redundancy goes
+    Mode.CONSERVATIVE: 0.005,
+    Mode.BALANCED: 0.03,
+    Mode.AGGRESSIVE: 0.08,
+    Mode.EXTREME: 0.15,       # stop as soon as marginal value drops
+}
+
 MODE_TARGETS: dict[Mode, float] = {
     Mode.LOSSLESS: 0.25,
     Mode.CONSERVATIVE: 0.50,
@@ -96,8 +112,9 @@ class Config:
     #: Marginal-utility stop.  Upgrades whose benefit/cost ratio falls below
     #: this fraction of the best ratio seen are refused, so the engine returns
     #: *under* budget when the remaining material is not worth its tokens.
-    #: 0 disables (spend the whole budget).
-    marginal_floor: float = 0.04
+    #: ``None`` derives it from the mode (see ``MODE_MARGINAL_FLOOR``); 0
+    #: disables the stop entirely and spends the whole budget.
+    marginal_floor: float | None = None
     contrastive_lambda: float = 0.35  #: generic-content penalty (RAG)
     protection: ProtectionPolicy = field(default_factory=ProtectionPolicy)
     render: RenderPolicy = field(default_factory=RenderPolicy)
@@ -116,6 +133,13 @@ class Config:
         return name in self.ablate
 
     # -- derived ------------------------------------------------------
+    @property
+    def effective_marginal_floor(self) -> float:
+        """Explicit setting wins; otherwise the mode decides."""
+        if self.marginal_floor is not None:
+            return self.marginal_floor
+        return MODE_MARGINAL_FLOOR[self.mode]
+
     @property
     def effective_target(self) -> float:
         if self.target_ratio is not None:
