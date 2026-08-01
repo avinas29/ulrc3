@@ -26,8 +26,26 @@ import difflib
 import re
 
 from ..text.hashing import near_duplicate_clusters, normalize_for_hash
-from ..types import EdgeKind, Level, Protection, Unit
+from ..types import EdgeKind, Level, Protection, Unit, UnitKind
 from .base import Pass, PassContext
+
+#: Kinds that must never receive a `delta` rung.  A delta is prose shorthand
+#: ("= <17> except {5->4}"); splicing one into a Python file emits text that
+#: cannot parse, which is exactly what happened before this exclusion existed.
+#: Structural content still participates in *clustering* (the canonical copy is
+#: chosen normally) -- it just never renders as a diff.
+_NO_DELTA_KINDS = frozenset(
+    {
+        UnitKind.LOG_TEMPLATE,
+        UnitKind.JSON_NODE,
+        UnitKind.CODE_DEF,
+        UnitKind.CODE_IMPORT,
+        UnitKind.CODE_STMT,
+        UnitKind.SQL_STMT,
+        UnitKind.TABLE_ROW,
+        UnitKind.TOOL_SCHEMA,
+    }
+)
 
 _MIN_TOKENS = 8
 _WORD = re.compile(r"\S+")
@@ -53,7 +71,7 @@ class DedupPass(Pass):
             for u in cir.units
             if u.protection < Protection.FROZEN
             and u.tokens >= _MIN_TOKENS
-            and u.kind.value not in ("log_template", "json_node")
+            and u.kind not in _NO_DELTA_KINDS
         ]
         if len(cand) < 2 or len(cand) > self.max_units:
             return

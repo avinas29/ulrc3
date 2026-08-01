@@ -43,6 +43,12 @@ class SymbolDef:
     end: int
     signature: str
     header_span: tuple[int, int] | None = None  #: verbatim `def ...:` slice
+    #: Verbatim annotated class attributes (`name: type = default`).  For a
+    #: dataclass / config / Pydantic model these ARE the constructor signature,
+    #: so eliding them loses the public contract just as surely as dropping a
+    #: function's parameter list -- measured: `class IndexerConfig: ...` left a
+    #: model unable to construct the object at all.
+    field_lines: list[str] = field(default_factory=list)
     decorators: list[str] = field(default_factory=list)
     docstring: str | None = None
     doc_span: tuple[int, int] | None = None
@@ -204,6 +210,8 @@ class _Collector(ast.NodeVisitor):
             complexity=_complexity(node),
         )
         sym.header_span = self._header_span(node, s, e)
+        if isinstance(node, ast.ClassDef):
+            sym.field_lines = self._field_lines(node)
         sym.body_hash = merkle_hash(node)
         self.mod.symbols[qual] = sym
         if isinstance(node, ast.ClassDef):
@@ -226,6 +234,18 @@ class _Collector(ast.NodeVisitor):
         if colon < 0:
             return None
         return (start, colon + 1)
+
+    def _field_lines(self, node: ast.ClassDef) -> list[str]:
+        """Verbatim source of annotated attributes declared directly on a class."""
+        out: list[str] = []
+        for stmt in node.body:
+            if not isinstance(stmt, ast.AnnAssign) or not isinstance(stmt.target, ast.Name):
+                continue
+            a, b = self._span(stmt)
+            line = self.src[a:b].strip()
+            if line:
+                out.append(line)
+        return out
 
     def _text(self, s: int, e: int) -> str:
         return self.src[s:e]
@@ -425,6 +445,15 @@ def signature_stub(sym: SymbolDef, keep_doc_line: bool = True, src: str = "") ->
             lines.append(f"@{d}")
         head = sym.signature or f"{'class' if sym.kind == 'class' else 'def'} {sym.name}"
         lines.append(f"{head}:")
+    if sym.field_lines:
+        pad = " " * 4
+        body = "\n".join(pad + f for f in sym.field_lines)
+        if keep_doc_line and sym.docstring:
+            first = sym.docstring.strip().splitlines()[0].strip().strip('"').strip("'")
+            if first:
+                body = f'{pad}"""{first}"""\n' + body
+        return "\n".join(lines) + "\n" + body
+
     doc = ""
     if keep_doc_line and sym.docstring:
         first = sym.docstring.strip().splitlines()[0].strip().strip('"').strip("'")

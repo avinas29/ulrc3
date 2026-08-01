@@ -226,6 +226,15 @@ class CodePipeline(Pipeline):
                 # every method's verbatim signature keeps the contract *and*
                 # parses.
                 sig_only = _api_surface(sym, kids, src, pad)
+            elif sym.field_lines and not split:
+                # **Field rung.**  For a dataclass / config / model the
+                # annotated attributes ARE the constructor signature.  Rendering
+                # `class IndexerConfig: ...` parses fine but throws the contract
+                # away -- a model then cannot construct the object at all.  We
+                # preserve function signatures byte-identically; class fields
+                # deserve exactly the same treatment.
+                fields = "\n".join(f"{pad}    {f}" for f in sym.field_lines)
+                sig_only = f"{header}\n{fields}"
             elif split or "\n" in header:
                 # A split class header must NOT be rendered as `class C: ...` --
                 # the following (retained) methods would be an unexpected indent.
@@ -236,7 +245,12 @@ class CodePipeline(Pipeline):
                 if kids and not split:
                     stub = _api_surface(sym, kids, src, pad, doc_line=doc_line)
                 else:
-                    stub = f'{header}\n{pad}    """{doc_line}"""\n{pad}    ...'
+                    body = (
+                        "\n".join(f"{pad}    {f}" for f in sym.field_lines)
+                        if sym.field_lines
+                        else f"{pad}    ..."
+                    )
+                    stub = f'{header}\n{pad}    """{doc_line}"""\n{body}'
         else:
             sig_only = _first_line(stub) + " ..."
         levels: list[tuple[str, str, float]] = []
