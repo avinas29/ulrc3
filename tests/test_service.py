@@ -191,3 +191,31 @@ def test_stream_endpoint_emits_events(client):
     kinds = [e["event"] for e in events]
     assert kinds[0] == "start" and kinds[-1] == "done"
     assert "result" in kinds and "pass" in kinds
+
+
+# -- hardening -------------------------------------------------------------
+def test_oversized_payload_is_rejected_not_processed(client, monkeypatch):
+    """A payload cap must reject at the edge.
+
+    Without it one client holds a worker for unbounded CPU: a 20 000-key JSON
+    body measured 4.7 s single-threaded before the guard existed.
+    """
+    from ulrc3.server import app as srv
+
+    monkeypatch.setattr(srv, "_MAX_CHARS", 1000)
+    r = client.post("/v1/compress", json={"text": "x" * 5000})
+    assert r.status_code == 413
+    assert "payload too large" in r.json()["detail"]
+
+
+def test_api_key_enforced_only_when_configured(client, monkeypatch):
+    """Unset key = open service (the demo); set key = every request checked."""
+    from ulrc3.server import app as srv
+
+    assert client.post("/v1/compress", json={"text": "hello world"}).status_code == 200
+    monkeypatch.setattr(srv, "_API_KEY", "secret")
+    assert client.post("/v1/compress", json={"text": "hello world"}).status_code == 401
+    ok = client.post(
+        "/v1/compress", json={"text": "hello world"}, headers={"x-api-key": "secret"}
+    )
+    assert ok.status_code == 200

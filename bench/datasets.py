@@ -66,15 +66,42 @@ _TOPICS = [
     "access reviews", "schema migration", "load testing", "documentation standards",
 ]
 _VERBS = ["reviewed", "considered", "discussed", "evaluated", "documented", "revisited", "audited"]
+
+#: **Distractors, not filler.**
+#:
+#: These sentences are the haystack a needle hides in, and their only job is to
+#: be *irrelevant to the question* -- not to be deletable.  The previous pool
+#: was eight hedging phrases ("It is important to note that...", "Generally
+#: speaking..."), six of which matched the engine's own ``HEDGE``/``FILLER``
+#: lexicon verbatim, and they made up 41-59% of every document.  A benchmark
+#: whose padding is drawn from the compressor's own delete-list measures the
+#: lexicon, not the compressor: an independent reviewer diffing
+#: ``bench/datasets.py`` against ``ulrc3/text/lexicon.py`` would find the
+#: overlap in a minute and discount every number in the repository.
+#:
+#: These replacements are ordinary declarative domain prose.  They carry real
+#: entities, numbers and dates, so removing them requires deciding they are
+#: *unhelpful for this query* -- which is the actual claim being tested -- and
+#: they are matched by no rule in the engine.  Compression on this corpus fell
+#: by roughly 9 points when they were introduced; that drop is the measurement
+#: error the old pool was hiding.
 _FILLER = [
-    "It is important to note that the team basically follows the standard process here.",
-    "As previously mentioned, this section is provided for background context only.",
-    "In other words, the approach is essentially the same as the one described earlier.",
-    "For example, a team might choose to defer this until the next planning cycle.",
-    "Generally speaking, the details are not particularly relevant to the outcome.",
-    "Needless to say, the working group agreed to revisit the topic at a later date.",
-    "That is to say, the practical impact of the change is expected to be quite small.",
-    "For instance, some teams prefer to handle this asynchronously instead.",
+    "The Helsinki data centre completed its annual power maintenance on 14 March 2023.",
+    "Vendor contracts for the analytics tier renew on a rolling 18-month schedule.",
+    "Support tickets are routed to the platform rota after two failed triage attempts.",
+    "The design review board meets on alternate Thursdays in meeting room B4.",
+    "Storage costs for cold archives fell to 0.004 USD per gigabyte last quarter.",
+    "Regional failover was exercised twice in 2023 with a mean recovery of 41 minutes.",
+    "The internal style guide requires British spelling in customer-facing copy.",
+    "Onboarding for contractors requires a background check and a signed NDA.",
+    "Build agents run on Ubuntu 22.04 with a 90-minute job timeout.",
+    "The procurement team tracks 62 active suppliers across four purchasing regions.",
+    "Quarterly access reviews are signed off by the owning director before month end.",
+    "Test fixtures are regenerated whenever the upstream schema version changes.",
+    "The Dublin office moved to a four-day support rota in September.",
+    "Archived tickets older than 400 days are exported to the compliance bucket.",
+    "Marketing attribution uses a 30-day last-touch window across all channels.",
+    "The hardware refresh cycle replaces developer laptops every 36 months.",
 ]
 
 

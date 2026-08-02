@@ -32,7 +32,7 @@ import uuid
 from collections.abc import AsyncIterator
 from typing import Any
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import FileResponse, JSONResponse, StreamingResponse
 from starlette.concurrency import run_in_threadpool
 
@@ -120,6 +120,41 @@ def _to_out(res: CompressionResult, session: str) -> CompressOut:
     )
 
 
+#: Hard ceiling on a single payload.  The engine is linear-ish in input size and
+#: single-threaded per request, so without a cap one client can hold a worker for
+#: an unbounded time: a 20 000-key JSON body measured at 4.7 s of pure CPU before
+#: this was added.  Rejecting at the edge is cheaper than any downstream guard.
+_MAX_CHARS = int(os.environ.get("ULRC3_MAX_INPUT_CHARS", str(4_000_000)))
+#: Wall-clock ceiling per request.  A pathological input that slips past the size
+#: cap still cannot pin a worker indefinitely.
+_TIMEOUT_S = float(os.environ.get("ULRC3_TIMEOUT_S", "60"))
+#: Optional shared-secret auth.  Unset (the default) leaves the service open,
+#: which is right for the public demo and wrong for anything else, so the health
+#: endpoint reports which mode is active rather than leaving it to be guessed.
+_API_KEY = os.environ.get("ULRC3_API_KEY", "")
+
+
+def _request_chars(body: CompressIn) -> int:
+    n = len(body.text or "") + len(body.system or "") + len(body.instruction or "")
+    n += sum(len(d if isinstance(d, str) else getattr(d, "text", "") or "") for d in (body.documents or []))
+    n += sum(len(str(getattr(m, "content", m))) for m in (body.messages or []))
+    return n
+
+
+def _guard(request: Request, body: CompressIn) -> None:
+    """Reject what must not reach the engine.  Raises ``HTTPException``."""
+    if _API_KEY and request.headers.get("x-api-key", "") != _API_KEY:
+        raise HTTPException(status_code=401, detail="invalid or missing x-api-key")
+    if not (body.text or body.documents or body.messages or body.system or body.instruction):
+        raise HTTPException(status_code=400, detail="empty request: nothing to compress")
+    n = _request_chars(body)
+    if n > _MAX_CHARS:
+        raise HTTPException(
+            status_code=413,
+            detail=f"payload too large: {n} chars > ULRC3_MAX_INPUT_CHARS={_MAX_CHARS}",
+        )
+
+
 def _run(body: CompressIn) -> tuple[CompressionResult, str]:
     eng = _engine_for(body)
     req = UlrcRequest(**body.to_request_kwargs())
@@ -145,24 +180,32 @@ async def demo() -> FileResponse:
 
 
 @app.post("/v1/compress", response_model=CompressOut)
-async def compress(body: CompressIn) -> CompressOut:
+async def compress(request: Request, body: CompressIn) -> CompressOut:
     global _REQUESTS
-    if not (body.text or body.documents or body.messages or body.system or body.instruction):
-        raise HTTPException(status_code=400, detail="empty request: nothing to compress")
+    _guard(request, body)
     async with _SEM:
-        res, session = await run_in_threadpool(_run, body)
+        try:
+            res, session = await asyncio.wait_for(
+                run_in_threadpool(_run, body), timeout=_TIMEOUT_S
+            )
+        except TimeoutError:
+            raise HTTPException(
+                status_code=504, detail=f"compression exceeded {_TIMEOUT_S}s"
+            ) from None
     _REQUESTS += 1
     return _to_out(res, session)
 
 
 @app.post("/v1/compress/stream")
-async def compress_stream(body: CompressIn) -> StreamingResponse:
+async def compress_stream(request: Request, body: CompressIn) -> StreamingResponse:
     """Newline-delimited JSON: progress events, then the final result.
 
     Compression is not incremental (the optimiser needs the whole IR), so the
     stream carries *stage* events rather than partial text.  That is honest and
     still useful: clients get progress and per-pass timings for long documents.
     """
+
+    _guard(request, body)
 
     async def gen() -> AsyncIterator[bytes]:
         t0 = time.perf_counter()

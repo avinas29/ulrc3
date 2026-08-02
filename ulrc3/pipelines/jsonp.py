@@ -25,6 +25,17 @@ from .base import BuildContext, Pipeline, register
 
 _MAX_SAMPLES = 2
 _HOMOGENEOUS_MIN = 3
+#: A child large enough to deserve its own unit and its own budget decision.
+#: Below this the child has no rung cheaper than itself, so decomposing only
+#: pins the payload to the protection floor -- see ``JsonPipeline.build``.
+_DECOMPOSE_MIN = 400
+#: Truncating a *schema* drops keys, and keys are an enforced obligation
+#: (``enforce_json_keys``); truncating *samples* drops illustrative values,
+#: which the sampled rung never promised to keep.  The two limits are therefore
+#: different by design: a wide object compresses by shedding its values, not by
+#: quietly shedding half its field names.  With the old shared 1 200-char cap a
+#: 2 000-key object emitted 86 keys and still audited at integrity 1.0.
+_SCHEMA_LIMIT = 2_000_000
 _SCALAR_PREVIEW = 120
 
 
@@ -65,12 +76,25 @@ def _string_format(s: str) -> str:
     return "str"
 
 
-def induce_schema(value: Any, depth: int = 0, max_depth: int = 6) -> Any:
-    """Recursive schema induction with enum detection and array unification."""
+def induce_schema(value: Any, depth: int = 0, max_depth: int = 6, unified: bool = False) -> Any:
+    """Recursive schema induction with enum detection and array unification.
+
+    ``unified`` marks that we are describing *many* instances at once (array
+    unification).  Only then is replacing a value with its type name a win.
+
+    For a single occurrence the type name costs about what the literal costs and
+    carries strictly less: ``"port":"int"`` is the same width as ``"port":8443``
+    and has thrown the answer away.  Abstracting single values turned every
+    configuration file into a useless list of field types -- measured on a
+    realistic service config, all of ``api.example.com``, ``8443``,
+    ``postgres://db:5432/prod`` and ``1048576`` were replaced by ``str``/``int``
+    while the audit still reported integrity 1.0.  Long strings and nested bulk
+    are still abstracted, because those are where the tokens actually are.
+    """
     if depth > max_depth:
         return "..."
     if isinstance(value, dict):
-        return {k: induce_schema(v, depth + 1, max_depth) for k, v in value.items()}
+        return {k: induce_schema(v, depth + 1, max_depth, unified) for k, v in value.items()}
     if isinstance(value, list):
         if not value:
             return []
@@ -86,7 +110,7 @@ def induce_schema(value: Any, depth: int = 0, max_depth: int = 6) -> Any:
                 keys_all = ks if keys_all is None else (keys_all & ks)
                 for k, v in item.items():
                     prev = merged.get(k)
-                    cur = induce_schema(v, depth + 1, max_depth)
+                    cur = induce_schema(v, depth + 1, max_depth, unified=True)
                     merged[k] = cur if prev is None or prev == cur else _union(prev, cur)
             for k in merged:
                 if keys_all is not None and k not in keys_all:
@@ -98,7 +122,27 @@ def induce_schema(value: Any, depth: int = 0, max_depth: int = 6) -> Any:
                 return [f"enum[{','.join(sorted(vals))}]"]
             return [next(iter(types))]
         return [sorted(types)]
-    return _type_of(value)
+    return _scalar(value, unified)
+
+
+def _scalar(value: Any, unified: bool) -> Any:
+    """A single scalar keeps its literal; a unified one collapses to its type."""
+    if unified:
+        return _type_of(value)
+    if isinstance(value, str) and len(value) > 80:
+        return _type_of(value)  # long free text is where the tokens are
+    return value
+
+
+def _clip(s: str, limit: int) -> str:
+    """Truncate without splitting a word (see :func:`compact_json`)."""
+    if len(s) <= limit:
+        return s
+    cut = s[:limit]
+    i = len(cut)
+    while i > 0 and (cut[i - 1].isalnum() or cut[i - 1] == "_"):
+        i -= 1
+    return cut[:i] if i else cut
 
 
 def _union(a: Any, b: Any) -> Any:
@@ -109,8 +153,11 @@ def _union(a: Any, b: Any) -> Any:
         for k, v in b.items():
             out[k] = _union(a[k], v) if k in a else v
         return out
-    sa = a if isinstance(a, str) else json.dumps(a, separators=(",", ":"))[:40]
-    sb = b if isinstance(b, str) else json.dumps(b, separators=(",", ":"))[:40]
+    # `[:40]` used to slice mid-word and manufacture vocabulary the source
+    # never had (`"command"` -> `comm`), which the provenance check correctly
+    # flags as an invented token.  Truncate on a boundary instead.
+    sa = a if isinstance(a, str) else _clip(json.dumps(a, separators=(",", ":")), 40)
+    sb = b if isinstance(b, str) else _clip(json.dumps(b, separators=(",", ":")), 40)
     return sa if sa == sb else f"{sa}|{sb}"
 
 
@@ -130,7 +177,18 @@ def compact_json(obj: Any, limit: int = 4000) -> str:
         s = json.dumps(obj, separators=(",", ":"), ensure_ascii=False, default=str)
     except Exception:
         s = str(obj)
-    return s if len(s) <= limit else s[:limit] + "…"
+    if len(s) <= limit:
+        return s
+    # Cut back to a non-word boundary.  Slicing mid-word manufactures a token
+    # the source never contained -- `"video"` truncated to `vid` -- which is a
+    # provenance violation, i.e. the engine inventing vocabulary.  Measured on
+    # real `package.json` and `commands.json`; the synthetic corpus never hit it
+    # because its values are short.
+    cut = s[:limit]
+    i = len(cut)
+    while i > 0 and (cut[i - 1].isalnum() or cut[i - 1] == "_"):
+        i -= 1
+    return (cut[:i] if i else cut) + "…"
 
 
 @register("json")
@@ -166,9 +224,45 @@ class JsonPipeline(Pipeline):
         )
         if root is None:
             return
-        self._levels(ctx, root, _root_header(data), _root_header(data), _root_header(data))
+        items = (
+            list(data.items())
+            if isinstance(data, dict)
+            else list(enumerate(data))
+            if isinstance(data, list)
+            else []
+        )
 
-        items = data.items() if isinstance(data, dict) else enumerate(data if isinstance(data, list) else [])
+        # **Decompose only when a child is worth its own budget decision.**
+        # Every root used to be exploded into one unit per child.  For the most
+        # common payload shape there is -- a top-level array of small records --
+        # each child is already tiny, so `_node` fell through to the `else`
+        # branch, its ladder collapsed to {drop, full}, and because JSON nodes
+        # are ANCHORED the protection floor equalled the entire payload.  The
+        # optimiser then had zero groups to work with, rendering cost slightly
+        # more than the source, and the inflation guard returned the input
+        # verbatim: measured 0.0% reduction on 500 identical records, on a flat
+        # 500-key object, and on every array of API results.
+        #
+        # Schema induction was never the missing piece -- it was written and
+        # tested, but only reachable for arrays *nested inside* an object.
+        # Laddering the root when its children are individually small routes
+        # exactly those payloads through the schema rung they were built for.
+        big = [(k, v) for k, v in items if len(compact_json(v)) >= _DECOMPOSE_MIN]
+        if items and not big:
+            # ``full`` must be the *verbatim source slice*, never a
+            # re-serialisation: ``compact_json`` truncates at 4 000 chars with
+            # an ellipsis, so re-serialising a large payload as the top rung
+            # emits JSON cut mid-record while the audit -- which extracts the
+            # rung's obligations from that same truncated text -- still reports
+            # integrity 1.0.  That is silent corruption of exactly the kind
+            # this pass exists to catch, so the top rung is the source itself.
+            low, mid, _ = self._rungs("$", data, full=stripped)
+            root.text = stripped
+            self._levels(ctx, root, low, mid, stripped)
+            root.symbols.add("$")
+            return
+
+        self._levels(ctx, root, _root_header(data), _root_header(data), _root_header(data))
         for key, value in items:
             path = f"$.{key}" if isinstance(data, dict) else f"$[{key}]"
             self._node(ctx, base, text, path, value, root.uid)
@@ -190,19 +284,27 @@ class JsonPipeline(Pipeline):
             return
         u.symbols.add(path)
 
+        low, mid, high = self._rungs(path, value, full=full)
+        self._levels(ctx, u, low, mid, high)
+
+    def _rungs(self, path: str, value: Any, full: str) -> tuple[str, str, str]:
+        """The (schema, sampled, full) rung texts for one JSON value.
+
+        Factored out of :meth:`_node` so the *root* can use the same ladder.
+        The rule is unchanged; only its reachability is.
+        """
         if isinstance(value, list) and len(value) >= _HOMOGENEOUS_MIN:
             schema = induce_schema(value)
-            schema_txt = f"{path}: {compact_json(schema, 1200)}  # {stats_of(value)}"
+            schema_txt = f"{path}: {compact_json(schema, _SCHEMA_LIMIT)}  # {stats_of(value)}"
             samples = compact_json(value[:_MAX_SAMPLES], 1500)
             mid = f"{schema_txt}\n{path}[0:{_MAX_SAMPLES}] = {samples}"
-            self._levels(ctx, u, schema_txt, mid, full)
-        elif isinstance(value, dict) and len(value) > 6:
+            return schema_txt, mid, full
+        if isinstance(value, dict) and len(value) > 6:
             schema = induce_schema(value)
-            schema_txt = f"{path}: {compact_json(schema, 1200)}"
-            self._levels(ctx, u, schema_txt, schema_txt, full)
-        else:
-            short = full if len(full) < 400 else f"{path}: {compact_json(induce_schema(value), 600)}"
-            self._levels(ctx, u, short, full, full)
+            schema_txt = f"{path}: {compact_json(schema, _SCHEMA_LIMIT)}"
+            return schema_txt, schema_txt, full
+        short = full if len(full) < 400 else f"{path}: {compact_json(induce_schema(value), 600)}"
+        return short, full, full
 
     def _levels(self, ctx: BuildContext, unit, low: str, mid: str, high: str) -> None:
         levels: list[Level] = [Level("drop", "", 0, 0.0, {}, set())]

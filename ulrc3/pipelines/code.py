@@ -239,8 +239,16 @@ class CodePipeline(Pipeline):
                 # A split class header must NOT be rendered as `class C: ...` --
                 # the following (retained) methods would be an unexpected indent.
                 sig_only = f"{header}\n{pad}    ..."
-            else:
+            elif header.rstrip().endswith(":"):
                 sig_only = f"{header} ..."
+            else:
+                # The header carries a trailing comment (`def f(x):  # note`), so
+                # appending ` ...` puts the body *inside the comment* and the
+                # function is left with none -- a SyntaxError that only appears
+                # when the next sibling `def` dedents.  Found on CPython's
+                # `_pydatetime.py`; invisible to the synthetic benchmark because
+                # generated code never carries trailing comments.
+                sig_only = f"{header}\n{pad}    ..."
             if doc_line:
                 if kids and not split:
                     stub = _api_surface(sym, kids, src, pad, doc_line=doc_line)
@@ -260,6 +268,15 @@ class CodePipeline(Pipeline):
             return u.uid
         if lang == "python":
             levels.append(("sig", sig_only, 0.35))
+            # Call-graph rung, between `sig` and `stub`: the names the body
+            # reaches, at ~10 tokens.  Without it the cheapest rendering that
+            # carries a body identifier is `full`, so a single `identifier:`
+            # miss dragged an entire function back into the output -- the
+            # dominant cause of real-code inflation (measured on CPython's
+            # zipimport.py: selection 1 918 tok -> verified output 4 994 tok).
+            uses = uses_line(sym, pad)
+            if uses:
+                levels.append(("uses", f"{sig_only}\n{uses}", 0.5))
             if doc_line:
                 levels.append(("stub", stub, 0.6))
         else:
@@ -432,7 +449,13 @@ def _api_surface(
         head = header_text(kid, src).rstrip()
         if not head:
             continue
-        lines.append(f"{head} ..." if "\n" not in head else f"{head}\n{pad}        ...")
+        # ` ...` may only be appended when the header ends at the colon; a
+        # trailing comment (`def f(self):  # note`) would otherwise swallow the
+        # body and leave the method with none.  Same defect as the standalone
+        # `sig` rung, found on CPython's `_pydatetime.py`.
+        inline = "\n" not in head and head.endswith(":")
+        indent = _LEADING_WS.match(head).group(0)
+        lines.append(f"{head} ..." if inline else f"{head}\n{indent}    ...")
         body += 1
     if body == 0:
         lines.append(f"{pad}    ...")
@@ -441,6 +464,45 @@ def _api_surface(
 
 def _has_code_shape(src: str) -> bool:
     return len(_CODE_SHAPE.findall(src)) >= 3
+
+
+#: Names carried by the language itself, not by this module's contract.
+_REF_NOISE = frozenset(
+    {
+        "self", "cls", "super", "None", "True", "False",
+        "len", "str", "int", "float", "bool", "list", "dict", "set", "tuple",
+        "range", "print", "isinstance", "type", "object", "Exception",
+        "ValueError", "TypeError", "KeyError", "IndexError", "AttributeError",
+        "min", "max", "sum", "sorted", "enumerate", "zip", "any", "all",
+        "getattr", "setattr", "hasattr", "repr", "iter", "next", "open",
+    }
+)
+
+
+def uses_line(sym, pad: str, limit: int = 14) -> str:
+    """The **call-graph rung**: which names a body reaches, without the body.
+
+    ``SymbolDef.refs`` is the set of ``Name``/``Attribute`` targets the parser
+    already collected -- the call graph the architecture documents but never
+    rendered.  Emitting it as a comment costs ~10 tokens and carries every
+    identifier obligation the body owns, so the verifier can satisfy an
+    ``identifier:`` miss without promoting a 200-token function to ``full``.
+
+    Rendered as a comment because a comment is invisible to ``ast.parse`` in
+    every position a signature can occupy, so the syntax guarantee is unchanged.
+    """
+    refs = sorted(
+        r for r in getattr(sym, "refs", ()) or ()
+        if r and r not in _REF_NOISE and not r.startswith("_") and len(r) > 1
+    )
+    if not refs:
+        return ""
+    shown = refs[:limit]
+    # Truncation is marked with an ellipsis rather than a count: a count is a
+    # numeral the source never contained, and the provenance check correctly
+    # rejects invented numerals outside a derived field.
+    more = ", ..." if len(refs) > limit else ""
+    return f"{pad}    # uses: {', '.join(shown)}{more}"
 
 
 def _first_line(s: str) -> str:

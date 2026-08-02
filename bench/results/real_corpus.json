@@ -1,0 +1,66 @@
+{
+  "files": 33,
+  "tokens_in": 189372,
+  "modes": {
+    "conservative": {
+      "reduction_mean": 0.4148632969855631,
+      "reduction_median": 0.4163413273842722,
+      "by_category": {
+        "python": 0.4172064216926076,
+        "markdown": 0.3936263063913807,
+        "rst": 0.4627964000245275,
+        "json": 0.39862620387106784
+      },
+      "tokens_per_s": 62297.620352258295,
+      "provenance_ok": 0.9696969696969697,
+      "integrity_1_0": 1.0,
+      "inflation_ok": 1.0,
+      "syntax_ok": 0.9696969696969697
+    },
+    "balanced": {
+      "reduction_mean": 0.571753866443188,
+      "reduction_median": 0.5485751295336787,
+      "by_category": {
+        "python": 0.590669812096835,
+        "markdown": 0.7391028482897608,
+        "rst": 0.5721372216845271,
+        "json": 0.43546362035213687
+      },
+      "tokens_per_s": 69157.8473285391,
+      "provenance_ok": 1.0,
+      "integrity_1_0": 1.0,
+      "inflation_ok": 1.0,
+      "syntax_ok": 0.9696969696969697
+    },
+    "aggressive": {
+      "reduction_mean": 0.6231646911039909,
+      "reduction_median": 0.6320247597328554,
+      "by_category": {
+        "python": 0.671984582051971,
+        "markdown": 0.8011349231119302,
+        "rst": 0.6432894342808434,
+        "json": 0.43769079184434173
+      },
+      "tokens_per_s": 73869.6316687344,
+      "provenance_ok": 1.0,
+      "integrity_1_0": 1.0,
+      "inflation_ok": 1.0,
+      "syntax_ok": 0.9696969696969697
+    },
+    "extreme": {
+      "reduction_mean": 0.6362129388205106,
+      "reduction_median": 0.66373459303904,
+      "by_category": {
+        "python": 0.6836844877025969,
+        "markdown": 0.8312365578307163,
+        "rst": 0.6604363801320744,
+        "json": 0.43769079184434173
+      },
+      "tokens_per_s": 75723.81890451246,
+      "provenance_ok": 1.0,
+      "integrity_1_0": 1.0,
+      "inflation_ok": 1.0,
+      "syntax_ok": 0.9696969696969697
+    }
+  }
+}

@@ -279,6 +279,7 @@ ulrc3 verify your_document.md   # exit 1 on any violation
 | Docker image builds, container serves | ✅ verified |
 | CLI, HTTP API, examples | ✅ verified |
 | Benchmark + ablation + perf numbers | ✅ reproduced end-to-end |
+| **Inference latency speedup** | ⚠️ **not demonstrated** — 1.03x mean (n=3); only materialises on very large contexts (1.26x at 12k tok). Compression shrinks prefill, but short-answer latency is decode-dominated. [EXTRINSIC.md](docs/EXTRINSIC.md) |
 | **End-to-end accuracy with a real LLM** | ✅ **measured** — 36 instances / 9 suites, paired: **no measurable loss** on 87% fewer tokens; **+72 pts vs truncation, p<0.0001**. It found two real bugs offline metrics could not. [EXTRINSIC.md](docs/EXTRINSIC.md) |
 | Real datasets (HotpotQA/LongBench) | ❌ adapter exists, no data shipped |
 | Confidence probabilities calibrated | ❌ hand-set priors; ordering is sound, absolute values are not |

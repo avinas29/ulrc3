@@ -141,6 +141,36 @@ Cost across the whole benchmark: **0.1 points of compression** (73.7% → 73.6%)
 with number recall up 89.3% → 90.0%. All four operands now survive at *every*
 mode including `extreme`.
 
+## Inference latency — measured, and weak
+
+| context | full | ULRC³ | speedup |
+|---|---|---|---|
+| needle, 4.5k → 0.9k tok | 2.24 s | 2.65 s | 0.85x |
+| needle, 4.7k → 1.0k tok | 2.34 s | 2.34 s | 1.00x |
+| logs, 12.4k → 0.5k tok | 3.22 s | 2.55 s | **1.26x** |
+| **mean (n=3)** | 2.60 s | 2.51 s | **1.03x** |
+
+**We do not claim a latency win.** At n=3 the mean is 1.03x, the median is
+1.00x, and one case is *slower*. Do not put a latency number on a slide.
+
+The reason is structural, not a tuning problem: for a short answer, wall-clock is
+dominated by **decode** (output tokens) and network round-trip, not **prefill**
+(input tokens). Compressing the input shrinks only the prefill term. The one
+case that did move -- 12.4k tokens down to 467 -- is exactly where prefill is a
+large enough share to matter, and it gave 1.26x.
+
+So the honest statement of where compression pays:
+
+* **cost** -- linear in input tokens, so the full 87% lands (this is the real win);
+* **context headroom** -- 7.7x more material fits in the same window, which
+  removes retrieval round-trips rather than making any single call faster;
+* **rate limits** -- tokens-per-minute quotas stretch 7.7x further;
+* **latency** -- only on very large contexts, and modestly.
+
+Establishing the latency claim properly needs ~50 paired requests at several
+context sizes. n=3 is a smoke test that came back negative-to-neutral, and it is
+reported as such.
+
 ### Reading this honestly
 
 **What it establishes.** At an identical token budget, compressed context is

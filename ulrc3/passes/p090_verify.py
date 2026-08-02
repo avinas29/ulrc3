@@ -37,7 +37,7 @@ import ast
 import json
 import re
 
-from ..ir.obligations import ObligationExtractor, _clause_bounds, audit
+from ..ir.obligations import ObligationExtractor, _clause_bounds, audit, canon
 from ..ir.protection import hard_classes
 from ..render.markers import MARKER_VOCAB
 from ..types import CIR, Level, Obligation, Protection, Span, Unit, UnitKind, Verification
@@ -182,46 +182,102 @@ class VerifyPass(Pass):
         # where 179 of 180 repair tokens went elsewhere and three critical
         # obligations were reported missing.
         for uid, obs in sorted(by_unit.items(), key=lambda kv: (priority[kv[0]], -len(kv[1]))):
-            keys = {o.key for o in obs}
-            limit = hard_cap if (keys & critical) else cap
-            if spent >= limit:
-                continue
             u = cir.units[uid]
-            promoted = False
-            for idx in range(max(1, u.level), len(u.levels)):
-                lv = u.levels[idx]
-                if lv.obligations and keys <= lv.obligations:
-                    delta = lv.tokens - u.cost
-                    if spent + max(0, delta) <= limit:
-                        u.set_level(idx)
-                        spent += max(0, delta)
-                        added += 1
-                        promoted = True
-                    break
-            if promoted:
-                seen |= keys
-                continue
 
-            text = self._merged_carrier(u, obs)
-            if not text:
-                continue
-            if u.kind in _NO_CARRIER_KINDS and not _is_prose_fragment(text):
-                # Splicing code fragments into a FACT block produces unreadable
-                # run-on text.  A *docstring* sentence inside a code unit is
-                # prose and repairs cleanly, so the gate is on the fragment's
-                # shape rather than on its container's kind.
-                continue
-            cost = ctx.tok.count(text) + 1
-            if spent + cost > limit:
-                continue
-            spent += cost
-            seen |= keys
-            self._emit_carrier(ctx, u, text, keys)
-            added += 1
+            # **Repair the exempt class separately from the rest.**
+            # Bundling every missing obligation of a unit into one set made a
+            # single deontic word escalate the whole unit to ``hard_cap``: on
+            # CPython's ``zipimport.py`` one ``constraint`` inside a docstring
+            # dragged 2 205 tokens of unrelated function body back in, because
+            # the only rung covering all 56 missing keys was ``full``.  Splitting
+            # keeps the absolute guarantee exactly as strong -- constraints,
+            # security and negations are still exempt from the budget cap -- while
+            # pricing them at what they actually cost, which is one clause.
+            crit_obs = [o for o in obs if o.key in critical]
+            rest_obs = [o for o in obs if o.key not in critical]
+            for group, limit in ((crit_obs, hard_cap), (rest_obs, cap)):
+                if not group or spent >= limit:
+                    continue
+                keys = {o.key for o in group}
+
+                # Both mechanisms are priced, then the cheaper *sufficient* one
+                # is chosen.  Taking the first mechanism that works is what an
+                # earlier version did, and it was systematically the expensive
+                # one: on real code the lowest rung whose obligations cover
+                # ``keys`` is usually the full body, so restoring one identifier
+                # promoted a 200-token function.  The guarantee requires an
+                # obligation to be *carried*; it never required its body.
+                promote_idx: int | None = None
+                promote_delta = 0
+                for idx in range(max(1, u.level), len(u.levels)):
+                    lv = u.levels[idx]
+                    if lv.obligations and keys <= lv.obligations:
+                        promote_idx = idx
+                        promote_delta = max(0, lv.tokens - u.cost)
+                        break
+
+                text = self._merged_carrier(u, group)
+                if text and u.kind in _NO_CARRIER_KINDS and not _is_prose_fragment(text):
+                    # Splicing code fragments into a FACT block produces
+                    # unreadable run-on text.  A *docstring* sentence inside a
+                    # code unit is prose and repairs cleanly, so the gate is on
+                    # the fragment's shape, not on its container's kind.
+                    text = ""
+                if text and not self._carries(ctx, text, group):
+                    # Sufficiency is *verified*, not assumed.  ``_merged_carrier``
+                    # is best-effort -- at most 12 obligations, truncated at 900
+                    # chars -- so a cheaper carrier can silently under-carry.
+                    text = ""
+                carrier_cost = (ctx.tok.count(text) + 1) if text else None
+
+                # Cheapest affordable option wins; ties go to promotion, which
+                # keeps the fact in context instead of in a FACT block.
+                options: list[tuple[int, str, int]] = []
+                if promote_idx is not None:
+                    options.append((promote_delta, "promote", promote_idx))
+                if carrier_cost is not None:
+                    options.append((carrier_cost, "carrier", 0))
+                options.sort(key=lambda o: (o[0], o[1] != "promote"))
+
+                for cost, how, idx in options:
+                    if spent + cost > limit:
+                        continue
+                    if how == "promote":
+                        u.set_level(idx)
+                    else:
+                        self._emit_carrier(ctx, u, text, keys)
+                    spent += cost
+                    seen |= keys
+                    added += 1
+                    break
 
         ctx.scratch["repaired_keys"] = seen
         ctx.scratch["repair_tokens"] = spent
         return added
+
+    def _carries(self, ctx: PassContext, text: str, obs: list[Obligation]) -> bool:
+        """Would :func:`audit` find every obligation in ``obs`` inside ``text``?
+
+        This must mirror ``audit``'s presence test exactly, or repair and the
+        audit disagree.  It is not enough to compare extractor keys: a
+        ``constraint`` key is a digest of the clause *as delimited in its
+        original unit*, so re-extracting the same sentence in isolation yields
+        a different span and therefore a different digest.  Checking keys alone
+        rejected every constraint carrier and sent repair to the only other
+        option -- promoting the whole function body.
+        """
+        ex_v: ObligationExtractor | None = ctx.scratch.get("ex_prose")
+        if ex_v is None:
+            return True
+        got = {k for _c, k, _l, _s, _e in ex_v.extract(text)}
+        normalised = canon(text)
+        for ob in obs:
+            if ob.key in got:
+                continue
+            if ob.literal and canon(ob.literal) in normalised:
+                continue
+            return False
+        return True
 
     def _owner(self, cir: CIR, ob: Obligation) -> int | None:
         for uid in sorted(ob.units):
@@ -403,6 +459,19 @@ def _syntax_check(cir: CIR) -> tuple[bool, list[str]]:
         try:
             ast.parse(src)
         except SyntaxError as exc:
+            # Only a *regression* is a defect.  Markdown and RST routinely tag
+            # fences `python` that were never standalone-parseable -- doctest
+            # transcripts, `...` continuations, bare expressions with an indent.
+            # Reporting those as our syntax failure made the guarantee read
+            # 84.8% on real files while the engine had broken nothing: measured
+            # on scikit-learn's `lfw.rst` and three sibling documents, whose
+            # sources do not parse either.  Compare against the original.
+            original = "\n".join(u.text for u in units)
+            try:
+                ast.parse(original)
+            except SyntaxError:
+                notes.append(f"{doc_id}: source region was not parseable either (not a regression)")
+                continue
             ok = False
             notes.append(f"{doc_id}: python parse failed at line {exc.lineno}: {exc.msg}")
     for u in cir.units:
